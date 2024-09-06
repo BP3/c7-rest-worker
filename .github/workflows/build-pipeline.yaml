@@ -12,6 +12,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
+      - name: Where am I
+        run: pwd
+
+      - name: ls
+        run: ls
+
       - name: Build Docker image of application
         run: docker build -t bp3global/c7-rest-worker-github .
 
@@ -22,4 +28,4 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Push Docker image to Docker Hub
-        run: docker push bp3global/c7-rest-worker-github .
+        run: docker push bp3global/c7-rest-worker-github
