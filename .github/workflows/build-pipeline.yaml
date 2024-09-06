@@ -1,0 +1,25 @@
+name: Build Pipeline
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Build Docker image of application
+        run: docker build -t bp3global/c7-rest-worker-github
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Push Docker image to Docker Hub
+        run: docker push bp3global/c7-rest-worker-github
