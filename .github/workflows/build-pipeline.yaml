@@ -12,11 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - name: Where am I
-        run: pwd
-
-      - name: ls
-        run: ls
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Build Docker image of application
         run: docker build -t bp3global/c7-rest-worker-github .
