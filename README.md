@@ -108,11 +108,6 @@ are supported
 | CLIENT_LOCK_DURATION | How long the service tasks are locked until they can fetched again | 10000                             |
 | LOG_LEVEL            | Amount of log messages that will be output                         | DEBUG                             |
 
-- Show how to set parameters
-    - via EnvVars
-    - on command line
-    - via properties file
-
 ## Running the worker as a jarfile
 ```bash
 $ ENGINE_ENDPOINT=http://c7host.mynet/engine-rest java -Dxxx=yyy -jar C7RESTConnector-<version>.jar
