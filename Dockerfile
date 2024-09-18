@@ -13,4 +13,10 @@ RUN apk add --no-cache \
         curl \
         openjdk17-jre-headless
 
-# TODO Add files from the build...
+# Add files from the build
+ADD . /worker
+
+# and set the workign directory
+WORKDIR /worker
+
+ENTRYPOINT ["./docker-entrypoint.sh"]
