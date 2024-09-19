@@ -1,0 +1,127 @@
+{
+  "$schema": "https://unpkg.com/@camunda/element-templates-json-schema/resources/schema.json",
+  "name": "REST Connector",
+  "id": "com.bp3:http-json:1",
+  "appliesTo": ["bpmn:ServiceTask"],
+  "groups": [
+    {
+      "id": "httpconfig",
+      "label": "HTTP Connector Configuration"
+    }
+  ],
+  "properties": [
+
+    {
+      "label": "Task Type",
+      "type": "Hidden",
+      "value": "external",
+      "editable": false,
+      "binding": {
+	    "type": "property",
+	    "name": "camunda:type"
+      }
+    },
+    {
+      "label": "Worker Topic",
+      "type": "Hidden",
+      "editable": false,
+      "value": "bp3-http-json",
+      "binding": {
+ 	    "type": "property",
+	    "name": "camunda:topic"
+      }
+    },
+
+    {
+      "label": "Method",
+      "group": "httpconfig",
+      "type": "Dropdown",
+      "value": "get",
+      "choices": [
+        { "name": "DELETE", "value": "delete" },
+        { "name": "POST",   "value": "post" },
+        { "name": "GET",    "value": "get" },
+        { "name": "PATCH",  "value": "patch" },
+        { "name": "PUT",    "value": "put" }
+      ],
+      "editable": true,
+      "binding": {
+        "type": "camunda:inputParameter",
+        "name": "httpMethod"
+      },
+      "constraints": {
+        "notEmpty": true
+      }
+    },
+    {
+      "label": "URL",
+      "group": "httpconfig",
+      "type": "String",
+      "editable": true,
+      "binding": {
+        "type": "camunda:inputParameter",
+        "name": "httpURL"
+      },
+      "constraints": {
+        "notEmpty": true,
+        "pattern" : {
+          "value" : "^(=|(http://|https://|secrets|\\{\\{).*$)",
+          "message" : "Must be a http(s) URL"
+        }
+      }
+    },
+    {
+      "label": "Headers",
+      "description": "Map of HTTP headers to add to the request",
+      "group": "httpconfig",
+      "type": "String",
+      "editable": true,
+      "binding": {
+        "type": "camunda:inputParameter",
+        "name": "httpHeaders"
+      }
+    },
+    {
+      "label": "Query parameters",
+      "description": "Map of query parameters to add to the request URL",
+      "group": "httpconfig",
+      "type": "String",
+      "editable": true,
+      "binding": {
+        "type": "camunda:inputParameter",
+        "name": "httpQueryParams"
+      }
+    },
+
+    {
+      "label": "Payload",
+      "group": "httpconfig",
+      "type": "String",
+      "editable": true,
+      "binding": {
+        "type": "camunda:inputParameter",
+        "name": "httpPayload"
+      }
+    },
+
+    {
+      "label": "Result Variable",
+      "group": "httpconfig",
+      "type": "String",
+      "editable": true,
+      "binding": {
+        "type": "camunda:inputParameter",
+        "name": "httpOutParameter"
+      }
+    },
+
+    {
+      "label": "Async before?",
+      "type": "Boolean",
+      "binding": {
+        "type": "property",
+        "name": "camunda:asyncBefore"
+      }
+    }
+  ]
+}
