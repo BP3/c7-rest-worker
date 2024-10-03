@@ -1,6 +1,10 @@
 name: Build Pipeline
 
 on:
+  push:
+    branches:
+      - split-steps
+
   pull_request:
     branches:
       - main
@@ -8,7 +12,7 @@ on:
       - closed
 
 jobs:
-  init:
+  build:
     runs-on: ubuntu-latest
     steps:
 
@@ -26,12 +30,20 @@ jobs:
         with:
           gradle-version: "8.8"
 
+      - name: Assemble worker JAR
+        run: gradle --build-cache assemble
+
+      - name: Cache JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: Assembled worker JAR's
+          path: /build/libs/*.jar
+          retention-days: 1
+
   release:
     runs-on: ubuntu-latest
     needs: init
     steps:
-      - name: Build worker JAR
-        run: gradle --build-cache assemble
 
       - name: Build Docker image of application
         run: docker build -t bp3global/c7-rest-worker .
