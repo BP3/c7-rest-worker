@@ -8,7 +8,7 @@ on:
       - closed
 
 jobs:
-  release:
+  init:
     runs-on: ubuntu-latest
     steps:
 
@@ -26,6 +26,10 @@ jobs:
         with:
           gradle-version: "8.8"
 
+  release:
+    runs-on: ubuntu-latest
+    needs: init
+    steps:
       - name: Build worker JAR
         run: gradle --build-cache assemble
 
