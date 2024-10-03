@@ -42,7 +42,7 @@ jobs:
 
   release:
     runs-on: ubuntu-latest
-    needs: init
+    needs: build
     steps:
 
       - name: Build Docker image of application
