@@ -15,6 +15,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: oracle
+          java-version: 17
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.8"
+
+      - name: Build worker JAR
+        run: gradle --build-cache assemble
+
       - name: Build Docker image of application
         run: docker build -t bp3global/c7-rest-worker .
 
