@@ -14,8 +14,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    outputs:
-      uploaded-jar-id: ${{ steps.upload-jar.outputs.artifact-id }}
 
     steps:
       - name: Checkout repository
@@ -36,9 +34,9 @@ jobs:
         run: gradle --build-cache assemble
 
       - name: Upload JAR
-        id: upload-jar
         uses: actions/upload-artifact@v4
         with:
+          name: worker-jar
           path: build/libs/*.jar
           retention-days: 1
 
@@ -46,6 +44,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
+      - name: Download JAR
+        uses: actions/download-artifact@v4
+        with:
+          name: worker-jar
+          path: build/libs
+
       - name: Build Docker image of application
         run: docker build -t bp3global/c7-rest-worker .
 
