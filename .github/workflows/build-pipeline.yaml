@@ -1,10 +1,6 @@
 name: Build Pipeline
 
 on:
-  push:
-    branches:
-      - split-steps
-
   pull_request:
     branches:
       - main
