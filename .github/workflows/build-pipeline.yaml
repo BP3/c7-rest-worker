@@ -50,13 +50,6 @@ jobs:
           name: worker-jar
           path: build/libs
 
-      - name: LS
-        run: | 
-          ls -al
-          cd build/libs
-          pwd
-          ls -al
-
       - name: Build Docker image of application
         run: docker build -t bp3global/c7-rest-worker .
 
