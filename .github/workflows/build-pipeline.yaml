@@ -44,11 +44,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: Download JAR
-        uses: actions/download-artifact@v4
-        with:
-          name: worker-jar
-          path: build/libs
+#      - name: Download JAR
+#        uses: actions/download-artifact@v4
+#        with:
+#          name: worker-jar
+#          path: build/libs
 
 #      - name: LS
 #        run: |
