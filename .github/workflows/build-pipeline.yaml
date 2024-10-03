@@ -37,7 +37,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Assembled worker JAR's
-          path: /build/libs/*.jar
+          path: /build/libs
           retention-days: 1
 
   release:
