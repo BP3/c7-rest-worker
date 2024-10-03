@@ -18,8 +18,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Build worker JAR file
-        run: docker run --mount type=bind,src=$(PWD),dst=/builds -w /builds gradle:jdk17 gradle --build-cache assemble
+      - name: Setup Gradle
+        run: gradle/actions/setup-gradle@v3
+
+      - name: Build worker JAR
+        run: ./gradle --build-cache assemble
 
       - name: Build Docker image of application
         run: docker build -t bp3global/c7-rest-worker .
