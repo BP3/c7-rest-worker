@@ -22,7 +22,7 @@ jobs:
         run: gradle/actions/setup-gradle@v3
 
       - name: Build worker JAR
-        run: ./gradle --build-cache assemble
+        run: ./gradlew --build-cache assemble
 
       - name: Build Docker image of application
         run: docker build -t bp3global/c7-rest-worker .
