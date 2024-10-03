@@ -19,9 +19,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Gradle
-        run: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: "8.8"
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Build worker JAR
         run: gradle --build-cache assemble
