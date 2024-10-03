@@ -31,9 +31,7 @@ jobs:
           gradle-version: "8.8"
 
       - name: Assemble worker JAR
-        run: |
-          gradle --build-cache assemble
-          ls -al
+        run: gradle --build-cache assemble
 
       - name: Cache JAR
         uses: actions/upload-artifact@v4
