@@ -54,6 +54,7 @@ jobs:
         run: | 
           ls -al
           cd build/libs
+          pwd
           ls -al
 
       - name: Build Docker image of application
