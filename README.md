@@ -56,8 +56,8 @@ This repo contains a Spring Boot app to implement the Job Worker.
 Details of how to deploy and configure this Job Worker can be found below.
 
 ### Dockerfile
-The Dockerfile is based upon the Dockerfiles used by Camunda to build their RUN images. 
-(** Needs references **)
+The Dockerfile is based upon the Dockerfiles used by Camunda to build their RUN images - see 
+(Camunda Run)[https://github.com/camunda/docker-camunda-bpm-platform].
 So, it is based upon the same image to minimise the layers you need to pull into your local image
 repository.
 
@@ -67,7 +67,7 @@ the external task definition.
 
 Repo Contents
 
-- Build file - probably Gradle - references Camunda built jarfile
+- Build file - references Camunda built jarfile
 - Spring Boot app containing Job Worker - produces jarfile
 - Dockerfile
 - Element template
@@ -82,18 +82,17 @@ docker run -it --rm --name gradle \
 ```
 The build can be modified using the following environment variables
 
-
-| Environment Variable        | Description                                    | Default        |
-|-----------------------------|------------------------------------------------|----------------|
-| CONNECTOR_VERSION           | The version to give to the built artifact(s)   | 0.0.1-SNAPSHOT |
-| CAMUNDA_VERSION             | The version of Camunda 7 that we are building against | 7.21.0  |
-| CAMUNDA_HTTP_CLIENT_VERSION | The version of the Camunda HTTP Cliet to use            | 1.6.0 |
-| REST_WORKER_ID              | The name of the 
+| Environment Variable        | Description                                           | Default        |
+|-----------------------------|-------------------------------------------------------|----------------|
+| CONNECTOR_VERSION           | The version to give to the built artifact(s)          | 0.0.1-SNAPSHOT |
+| CAMUNDA_VERSION             | The version of Camunda 7 that we are building against | 7.21.0         |
+| CAMUNDA_HTTP_CLIENT_VERSION | The version of the Camunda HTTP Client to use         | 1.6.0          |
+| REST_WORKER_ID              | The name of the                                       |                |
 
 ## Building the docker image locally
 
 ```bash
-docker build -t c7-rest-worker:<version> .
+docker build -t c7-rest-worker:7.21.0 .
 ```
 
 # Running the worker
@@ -108,11 +107,6 @@ are supported
 | CLIENT_LOCK_DURATION | How long the service tasks are locked until they can fetched again | 10000                             |
 | LOG_LEVEL            | Amount of log messages that will be output                         | DEBUG                             |
 
-- Show how to set parameters 
-  - via EnvVars
-  - on command line
-  - via properties file
-
 ## Running the worker as a jarfile
 ```bash
 $ ENGINE_ENDPOINT=http://c7host.mynet/engine-rest java -Dxxx=yyy -jar C7RESTConnector-<version>.jar
@@ -126,7 +120,7 @@ The simplest way to run the docker image is as follows
 $ docker run -it --rm \
     --name c7-worker \
     -e ENGINE_ENDPOINT=http://c7host.mynet/engine-rest \
-          bp3/camunda7/c7-rest-worker:<version> [options]
+          bp3/camunda7/c7-rest-worker:7.21.0 [options]
           
 where 'options' are a list of flags for the 'java' command, e.g. -Dxxx=yyy
 ```
