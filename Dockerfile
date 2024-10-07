@@ -16,13 +16,5 @@ RUN apk add --no-cache \
 ENTRYPOINT ["./docker-entrypoint.sh"]
 WORKDIR /worker
 
-# We want to ensure that we bust the docker build cache whenever the
-# contents of the repo change, i.e. there are new commits (to main).
-# Without busting the cache at this point then we would need to use
-# the --no-cache argument to docker build to ensure that it is refreshed
-# each time it is built - thereby losing the benefit of having the above
-# layers already in the cache.
-ADD https://github.com/BP3/c7-rest-worker/commits /dev/null
-
 # Add files from the build
 ADD . /worker
