@@ -1,9 +1,9 @@
 name: Build Pipeline
 
 on:
-  push:
-    tags:
-      - "*"
+  release:
+    types:
+      - published
 
 env:
   DOCKER_IMAGE_NAME: "bp3global/c7-rest-worker"
