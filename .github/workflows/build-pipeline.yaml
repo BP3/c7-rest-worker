@@ -1,11 +1,14 @@
 name: Build Pipeline
 
 on:
-  pull_request:
-    branches:
-      - main
-    types:
-      - closed
+  push:
+    tags:
+      - "*"
+  release:
+    types: [published]
+
+env:
+  DOCKER_IMAGE_NAME: "bp3global/c7-rest-worker"
 
 jobs:
   build:
@@ -37,6 +40,7 @@ jobs:
           retention-days: 1
 
   release:
+    if: $GITHUB_REF_NAME != ""
     runs-on: ubuntu-latest
     needs: build
     steps:
@@ -50,7 +54,7 @@ jobs:
           path: build/libs
 
       - name: Build Docker image of application
-        run:  docker build -t bp3global/c7-rest-worker .
+        run:  docker build -t $DOCKER_IMAGE_NAME .
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -59,4 +63,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_BP3DOCKER }}
 
       - name: Push Docker image to Docker Hub
-        run: docker push bp3global/c7-rest-worker
+        run: |
+          docker push $DOCKER_IMAGE_NAME:$GITHUB_REF_NAME
+          docker tag  $DOCKER_IMAGE_NAME:$GITHUB_REF_NAME $DOCKER_IMAGE_NAME:latest
+          docker push $DOCKER_IMAGE_NAME:latest
