@@ -63,5 +63,5 @@ jobs:
       - name: Push Docker image to Docker Hub
         run: |
           docker push $DOCKER_IMAGE_NAME:$GITHUB_REF_NAME
-          docker tag  $DOCKER_IMAGE_NAME:$GITHUB_REF_NAME $DOCKER_IMAGE_NAME:latest
-          docker push $DOCKER_IMAGE_NAME:latest
+#          docker tag  $DOCKER_IMAGE_NAME:$GITHUB_REF_NAME $DOCKER_IMAGE_NAME:latest
+#          docker push $DOCKER_IMAGE_NAME:latest
