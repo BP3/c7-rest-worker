@@ -121,7 +121,7 @@ public class C7RESTConnector implements ExternalTaskHandler {
                             e.getLocalizedMessage());
                     case "Failure" -> {
                         int retriesLeft;
-                        if (Objects.isNull(externalTask.getRetries())) {
+                        if (externalTask.getRetries() == null) {
                             retriesLeft = totalRetries;
                         } else {
                             retriesLeft = externalTask.getRetries() - 1;
