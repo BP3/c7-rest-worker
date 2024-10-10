@@ -97,7 +97,7 @@ public class C7RESTConnector implements ExternalTaskHandler {
             // complete the external task
             externalTaskService.complete(externalTask, variables);
         } catch(ConnectorException e) {
-            log.error("CONNECTOR_ERROR: {}", e.getLocalizedMessage(), e.fillInStackTrace());
+            log.error("CONNECTOR_ERROR: {}", e.getLocalizedMessage(), e);
 
             String errorHandlingMethod = (String) getVariable(externalTask, PARAM_ERROR_HANDLING_METHOD, String.class);
 
