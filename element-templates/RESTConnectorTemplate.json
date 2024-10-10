@@ -2,7 +2,9 @@
   "$schema": "https://unpkg.com/@camunda/element-templates-json-schema/resources/schema.json",
   "name": "REST Connector",
   "id": "com.bp3:http-json:1",
-  "appliesTo": ["bpmn:ServiceTask"],
+  "appliesTo": [
+    "bpmn:ServiceTask"
+  ],
   "groups": [
     {
       "id": "httpconfig",
@@ -10,15 +12,14 @@
     }
   ],
   "properties": [
-
     {
       "label": "Task Type",
       "type": "Hidden",
       "value": "external",
       "editable": false,
       "binding": {
-	    "type": "property",
-	    "name": "camunda:type"
+        "type": "property",
+        "name": "camunda:type"
       }
     },
     {
@@ -27,22 +28,36 @@
       "editable": false,
       "value": "bp3-http-json",
       "binding": {
- 	    "type": "property",
-	    "name": "camunda:topic"
+        "type": "property",
+        "name": "camunda:topic"
       }
     },
-
     {
       "label": "Method",
       "group": "httpconfig",
       "type": "Dropdown",
       "value": "get",
       "choices": [
-        { "name": "DELETE", "value": "delete" },
-        { "name": "POST",   "value": "post" },
-        { "name": "GET",    "value": "get" },
-        { "name": "PATCH",  "value": "patch" },
-        { "name": "PUT",    "value": "put" }
+        {
+          "name": "DELETE",
+          "value": "delete"
+        },
+        {
+          "name": "POST",
+          "value": "post"
+        },
+        {
+          "name": "GET",
+          "value": "get"
+        },
+        {
+          "name": "PATCH",
+          "value": "patch"
+        },
+        {
+          "name": "PUT",
+          "value": "put"
+        }
       ],
       "editable": true,
       "binding": {
@@ -64,9 +79,9 @@
       },
       "constraints": {
         "notEmpty": true,
-        "pattern" : {
-          "value" : "^(=|(http://|https://|secrets|\\{\\{).*$)",
-          "message" : "Must be a http(s) URL"
+        "pattern": {
+          "value": "^(=|(http://|https://|secrets|\\{\\{).*$)",
+          "message": "Must be a http(s) URL"
         }
       }
     },
@@ -92,7 +107,6 @@
         "name": "httpQueryParams"
       }
     },
-
     {
       "label": "Payload",
       "group": "httpconfig",
@@ -103,7 +117,6 @@
         "name": "httpPayload"
       }
     },
-
     {
       "label": "Result Variable",
       "group": "httpconfig",
@@ -114,7 +127,53 @@
         "name": "httpOutParameter"
       }
     },
-
+    {
+      "label": "Error Handling Method",
+      "description": "Determine how connector errors should be handled and propagated back to the process.",
+      "group": "httpconfig",
+      "type": "Dropdown",
+      "choices": [
+        {
+          "name": "",
+          "value": ""
+        },
+        {
+          "name": "BPMN Error",
+          "value": "BPMNError"
+        },
+        {
+          "name": "Failure",
+          "value": "Failure"
+        }
+      ],
+      "editable": true,
+      "binding": {
+        "type": "camunda:inputParameter",
+        "name": "errorHandlingMethod"
+      }
+    },
+    {
+      "label": "Retries",
+      "description": "Number of retries. Used when using the Failure handling method. If not set this will default to zero.",
+      "group": "httpconfig",
+      "type": "String",
+      "editable": true,
+      "binding": {
+        "type": "camunda:inputParameter",
+        "name": "retries"
+      }
+    },
+    {
+      "label": "Retry backoff",
+      "description": "Backoff period between retries in seconds. Used when using the Failure handling method. If not set this will default to zero.",
+      "group": "httpconfig",
+      "type": "String",
+      "editable": true,
+      "binding": {
+        "type": "camunda:inputParameter",
+        "name": "retryBackoff"
+      }
+    },
     {
       "label": "Async before?",
       "type": "Boolean",
