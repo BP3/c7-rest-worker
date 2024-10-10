@@ -70,18 +70,6 @@ public class C7RESTConnector implements ExternalTaskHandler {
         String outputVariableName = (String) getVariable(externalTask, PARAM_OUTPUT_VARIABLE, String.class);
         String errorHandlingMethod = (String) getVariable(externalTask, PARAM_ERROR_HANDLING_METHOD, String.class);
 
-        int totalRetries = 0; // Default to zero if not set
-        String retriesParam = (String) getVariable(externalTask, PARAM_RETRIES, String.class);
-        if (Objects.nonNull(retriesParam)) {
-            totalRetries = Integer.parseInt(retriesParam);
-        }
-
-        long retryBackoff = 0; // Default to zero if not set
-        String retryBackoffParam = (String) getVariable(externalTask, PARAM_RETRY_BACKOFF, String.class);
-        if (Objects.nonNull(retriesParam)) {
-            retryBackoff = Long.parseLong(retryBackoffParam);
-        }
-
         // validate configuration...
         assert httpMethod != null : "HTTP method must not be null";
         assert httpURL != null : "HTTP URL must not be null";
@@ -112,8 +100,20 @@ public class C7RESTConnector implements ExternalTaskHandler {
         } catch(ConnectorException e) {
             log.error("CONNECTOR_ERROR: {}", e.getLocalizedMessage(), e.fillInStackTrace());
 
-            if (Objects.nonNull(errorHandlingMethod)) {
+            if (errorHandlingMethod != null) {
                 log.debug("CONNECTOR_ERROR: Handling as '{}'", errorHandlingMethod);
+
+                int totalRetries = 0; // Default to zero if not set
+                String retriesParam = (String) getVariable(externalTask, PARAM_RETRIES, String.class);
+                if (retriesParam != null) {
+                    totalRetries = Integer.parseInt(retriesParam);
+                }
+
+                long retryBackoff = 0; // Default to zero if not set
+                String retryBackoffParam = (String) getVariable(externalTask, PARAM_RETRY_BACKOFF, String.class);
+                if (retryBackoffParam != null) {
+                    retryBackoff = Long.parseLong(retryBackoffParam);
+                }
 
                 switch(errorHandlingMethod) {
                     case "BPMNError" -> externalTaskService.handleBpmnError(externalTask, "CONNECTOR_ERROR",
