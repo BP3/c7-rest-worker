@@ -10,6 +10,7 @@ import org.camunda.bpm.client.task.ExternalTaskHandler;
 import org.camunda.bpm.client.task.ExternalTaskService;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.engine.variable.Variables;
+import org.camunda.connect.ConnectorException;
 import org.camunda.connect.httpclient.HttpConnector;
 import org.camunda.connect.httpclient.HttpRequest;
 import org.camunda.connect.httpclient.HttpResponse;
@@ -22,6 +23,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Component
 @ExternalTaskSubscription("bp3-http-json")
@@ -34,6 +36,9 @@ public class C7RESTConnector implements ExternalTaskHandler {
     public static final String PARAM_HTTP_PARAMETERS = "httpQueryParams";
     public static final String PARAM_HTTP_PAYLOAD = "httpPayload";
     public static final String PARAM_OUTPUT_VARIABLE = "httpOutParameter";
+    public static final String PARAM_ERROR_HANDLING_METHOD = "errorHandlingMethod";
+    public static final String PARAM_RETRIES = "retries";
+    public static final String PARAM_RETRY_BACKOFF = "retryBackoff";
 
     private final HttpConnector httpConnector;
     private final ObjectMapper mapper;
@@ -63,6 +68,19 @@ public class C7RESTConnector implements ExternalTaskHandler {
         Map<String, String> httpHeaders = (Map<String, String>) getVariable(externalTask, PARAM_HTTP_HEADERS, Map.class);
         Map<String, String> httpQueryParams = (Map<String, String>) getVariable(externalTask, PARAM_HTTP_PARAMETERS, Map.class);
         String outputVariableName = (String) getVariable(externalTask, PARAM_OUTPUT_VARIABLE, String.class);
+        String errorHandlingMethod = (String) getVariable(externalTask, PARAM_ERROR_HANDLING_METHOD, String.class);
+
+        int totalRetries = 0; // Default to zero if not set
+        String retriesParam = (String) getVariable(externalTask, PARAM_RETRIES, String.class);
+        if (Objects.nonNull(retriesParam)) {
+            totalRetries = Integer.parseInt(retriesParam);
+        }
+
+        long retryBackoff = 0; // Default to zero if not set
+        String retryBackoffParam = (String) getVariable(externalTask, PARAM_RETRY_BACKOFF, String.class);
+        if (Objects.nonNull(retriesParam)) {
+            retryBackoff = Long.parseLong(retryBackoffParam);
+        }
 
         // validate configuration...
         assert httpMethod != null : "HTTP method must not be null";
@@ -79,17 +97,43 @@ public class C7RESTConnector implements ExternalTaskHandler {
         setPayload(request, httpMethod, httpPayload);
 
         // call the REST service
-        HttpResponse response = request.execute();
+        try {
+            HttpResponse response = request.execute();
 
-        // set the output variable
-        log.debug("RESPONSE: {}", response.getResponse());
-        VariableMap variables = Variables.createVariables();
-        if (outputVariableName != null) {
-            variables.putValue(outputVariableName, response.getResponse());
+            // set the output variable
+            log.debug("RESPONSE: {}", response.getResponse());
+            VariableMap variables = Variables.createVariables();
+            if (outputVariableName != null) {
+                variables.putValue(outputVariableName, response.getResponse());
+            }
+
+            // complete the external task
+            externalTaskService.complete(externalTask, variables);
+        } catch(ConnectorException e) {
+            log.error("CONNECTOR_ERROR: {}", e.getLocalizedMessage(), e.fillInStackTrace());
+
+            if (Objects.nonNull(errorHandlingMethod)) {
+                log.debug("CONNECTOR_ERROR: Handling as '{}'", errorHandlingMethod);
+
+                switch(errorHandlingMethod) {
+                    case "BPMNError" -> externalTaskService.handleBpmnError(externalTask, "CONNECTOR_ERROR",
+                            e.getLocalizedMessage());
+                    case "Failure" -> {
+                        int retriesLeft;
+                        if (Objects.isNull(externalTask.getRetries())) {
+                            retriesLeft = totalRetries;
+                        } else {
+                            retriesLeft = externalTask.getRetries() - 1;
+                        }
+
+                        log.debug("HANDLE_FAILURE: Handling failure with '{}' retry(s) left and a backoff of '{}' second(s)",
+                                retriesLeft, retryBackoff);
+                        externalTaskService.handleFailure(externalTask, "HTTP request has failed",
+                                e.getLocalizedMessage(), retriesLeft, retryBackoff * 1000);
+                    }
+                }
+            }
         }
-
-        // complete the external task
-        externalTaskService.complete(externalTask, variables);
 
         log.debug("EXTERNAL TASK EXECUTED: {} / {}", externalTask.getActivityId(), externalTask.getExecutionId());
     }
