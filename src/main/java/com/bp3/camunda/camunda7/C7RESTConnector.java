@@ -104,22 +104,22 @@ public class C7RESTConnector implements ExternalTaskHandler {
             if (errorHandlingMethod != null) {
                 log.debug("CONNECTOR_ERROR: Handling as '{}'", errorHandlingMethod);
 
-                int totalRetries = 0; // Default to zero if not set
-                String retriesParam = (String) getVariable(externalTask, PARAM_RETRIES, String.class);
-                if (retriesParam != null) {
-                    totalRetries = Integer.parseInt(retriesParam);
-                }
-
-                long retryBackoff = 0; // Default to zero if not set
-                String retryBackoffParam = (String) getVariable(externalTask, PARAM_RETRY_BACKOFF, String.class);
-                if (retryBackoffParam != null) {
-                    retryBackoff = Long.parseLong(retryBackoffParam);
-                }
-
                 switch(errorHandlingMethod) {
                     case "BPMNError" -> externalTaskService.handleBpmnError(externalTask, "CONNECTOR_ERROR",
                             e.getLocalizedMessage());
                     case "Failure" -> {
+                        int totalRetries = 0; // Default to zero if not set
+                        String retriesParam = (String) getVariable(externalTask, PARAM_RETRIES, String.class);
+                        if (retriesParam != null) {
+                            totalRetries = Integer.parseInt(retriesParam);
+                        }
+
+                        long retryBackoff = 0; // Default to zero if not set
+                        String retryBackoffParam = (String) getVariable(externalTask, PARAM_RETRY_BACKOFF, String.class);
+                        if (retryBackoffParam != null) {
+                            retryBackoff = Long.parseLong(retryBackoffParam);
+                        }
+
                         int retriesLeft;
                         if (externalTask.getRetries() == null) {
                             retriesLeft = totalRetries;
