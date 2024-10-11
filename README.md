@@ -78,7 +78,7 @@ Repo Contents
 ```bash
 docker run -it --rm --name gradle \
     --mount type=bind,src=$(PWD),dst=/builds -w /builds \
-        gradle:jdk17 gradle --build-cache assemble
+        gradle:jdk17 gradle --build-cache build
 ```
 The build can be modified using the following environment variables
 

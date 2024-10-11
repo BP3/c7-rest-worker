@@ -1,18 +1,19 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version "${spring_boot_version}"
-    id 'io.spring.dependency-management' version "${spring_dependency_management_version}"
+    id 'org.springframework.boot' version "${springBootVersion}"
+    id 'io.spring.dependency-management' version "${springDependencyManagementVersion}"
+    id 'jacoco'
+    id 'checkstyle'
+    id 'com.github.spotbugs' version '6.0.21'
+    id 'org.owasp.dependencycheck' version '10.0.4'
 }
 
 group = 'com.bp3'
-version = System.getenv("CONNECTOR_VERSION") != null ? System.getenv("CONNECTOR_VERSION") : '0.0.1-SNAPSHOT'
-camunda_version = System.getenv("CAMUNDA_VERSION") != null ? System.getenv("CAMUNDA_VERSION") : "$camunda_version"
-camunda_http_client_version = System.getenv("CAMUNDA_HTTP_CLIENT_VERSION") != null ? System.getenv("CAMUNDA_HTTP_CLIENT_VERSION") : "$camunda_http_client_version"
-
-println("Building version [$version]")
-println("CAMUNDA VERSION: [$camunda_version]")
+version = '0.0.1-SNAPSHOT'
 
 java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
     }
@@ -30,27 +31,61 @@ repositories {
 
 dependencyManagement {
     imports {
-        mavenBom "org.camunda.bpm:camunda-bom:${camunda_version}"
-        mavenBom "org.springframework.boot:spring-boot-starter-parent:${spring_boot_version}"
+        mavenBom "org.camunda.bpm:camunda-bom:${camundaVersion}"
+        mavenBom "org.springframework.boot:spring-boot-starter-parent:${springBootVersion}"
     }
 }
 
 dependencies {
-    compileOnly("org.projectlombok:lombok:${lombok_version}")
-    annotationProcessor("org.projectlombok:lombok:${lombok_version}")
+    annotationProcessor('org.projectlombok:lombok')
+    compileOnly('org.projectlombok:lombok')
 
-    implementation("org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter-external-task-client:${camunda_version}")
-    implementation("org.camunda.connect:camunda-connect-http-client:${camunda_http_client_version}")
+    implementation('org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter-external-task-client')
+    implementation('org.camunda.connect:camunda-connect-http-client')
+    implementation('com.fasterxml.jackson.datatype:jackson-datatype-jsr310')
 
-    // workaround for external task dependency issue - https://github.com/camunda/camunda-bpm-platform/issues/3829
-    implementation("jakarta.xml.bind:jakarta.xml.bind-api:${jakarta_xml_bind_api_version}")
-
-    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:${jackson_datatype_jsr310_version}")
-
-    testImplementation("org.springframework.boot:spring-boot-starter-test:${spring_boot_version}")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher:${junit_platform_launcher_version}")
+    testImplementation('org.springframework.boot:spring-boot-starter-test')
+    testRuntimeOnly('org.junit.platform:junit-platform-launcher')
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+    jvmArgs "-Xshare:off"
+    if (JavaVersion.current() >= JavaVersion.VERSION_21) {
+        jvmArgs "-XX:+EnableDynamicAgentLoading"
+    }
+    finalizedBy jacocoTestReport
 }
+jacocoTestReport {
+    dependsOn test
+}
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            element = 'CLASS'
+
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.7
+            }
+
+            excludes = ["com.bp3.camunda.camunda7.C7RestConnectorApplication"]
+        }
+    }
+}
+tasks.named('check') {
+    dependsOn jacocoTestCoverageVerification
+}
+
+dependencyCheck {
+    nvd {
+        validForHours = 24
+        apiKey = System.getenv('NIST_NVD_API_KEY') ?: nistNvdApiKey
+    }
+    failBuildOnCVSS = 7.0
+    skipConfigurations = ["compileClasspath", "compileOnly", "spotbugs", "checkstyle"]
+    suppressionFile = file("$rootProject.projectDir/config/vulnerability-suppression.xml")
+}
+
+defaultTasks 'build'
