@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 @Component
 @ExternalTaskSubscription("bp3-http-json")
@@ -108,23 +107,25 @@ public class C7RESTConnector implements ExternalTaskHandler {
                     case "BPMNError" -> externalTaskService.handleBpmnError(externalTask, "CONNECTOR_ERROR",
                             e.getLocalizedMessage());
                     case "Failure" -> {
-                        int totalRetries = 0; // Default to zero if not set
-                        String retriesParam = (String) getVariable(externalTask, PARAM_RETRIES, String.class);
-                        if (retriesParam != null) {
-                            totalRetries = Integer.parseInt(retriesParam);
+                        int retriesLeft;
+                        Integer retries = externalTask.getRetries();
+                        if (retries == null) {
+                            String retriesParam = (String) getVariable(externalTask, PARAM_RETRIES, String.class);
+                            if (retriesParam == null) {
+                                retriesLeft = 0; // Default to zero if not set
+                            } else {
+                                retriesLeft = Integer.parseInt(retriesParam);
+                            }
+                        } else {
+                            retriesLeft = retries - 1;
                         }
 
-                        long retryBackoff = 0; // Default to zero if not set
+                        long retryBackoff; // Default to zero if not set
                         String retryBackoffParam = (String) getVariable(externalTask, PARAM_RETRY_BACKOFF, String.class);
                         if (retryBackoffParam != null) {
                             retryBackoff = Long.parseLong(retryBackoffParam);
-                        }
-
-                        int retriesLeft;
-                        if (externalTask.getRetries() == null) {
-                            retriesLeft = totalRetries;
                         } else {
-                            retriesLeft = externalTask.getRetries() - 1;
+                            retryBackoff = 0; // Default to zero if not set
                         }
 
                         log.debug("HANDLE_FAILURE: Handling failure with '{}' retry(s) left and a backoff of '{}' second(s)",
@@ -132,7 +133,12 @@ public class C7RESTConnector implements ExternalTaskHandler {
                         externalTaskService.handleFailure(externalTask, "HTTP request has failed",
                                 e.getLocalizedMessage(), retriesLeft, retryBackoff * 1000);
                     }
+                    default -> {
+                        log.warn("Invalid error handing method {}, error will be ignored", errorHandlingMethod, e);
+                    }
                 }
+            } else {
+                log.warn("No error handing method specified, error will be ignored", e);
             }
         }
 
