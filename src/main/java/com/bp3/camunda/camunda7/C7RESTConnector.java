@@ -10,6 +10,7 @@ import org.camunda.bpm.client.task.ExternalTaskHandler;
 import org.camunda.bpm.client.task.ExternalTaskService;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.engine.variable.Variables;
+import org.camunda.connect.ConnectorException;
 import org.camunda.connect.httpclient.HttpConnector;
 import org.camunda.connect.httpclient.HttpRequest;
 import org.camunda.connect.httpclient.HttpResponse;
@@ -34,6 +35,9 @@ public class C7RESTConnector implements ExternalTaskHandler {
     public static final String PARAM_HTTP_PARAMETERS = "httpQueryParams";
     public static final String PARAM_HTTP_PAYLOAD = "httpPayload";
     public static final String PARAM_OUTPUT_VARIABLE = "httpOutParameter";
+    public static final String PARAM_ERROR_HANDLING_METHOD = "errorHandlingMethod";
+    public static final String PARAM_RETRIES = "retries";
+    public static final String PARAM_RETRY_BACKOFF = "retryBackoff";
 
     private final HttpConnector httpConnector;
     private final ObjectMapper mapper;
@@ -79,17 +83,64 @@ public class C7RESTConnector implements ExternalTaskHandler {
         setPayload(request, httpMethod, httpPayload);
 
         // call the REST service
-        HttpResponse response = request.execute();
+        try {
+            HttpResponse response = request.execute();
 
-        // set the output variable
-        log.debug("RESPONSE: {}", response.getResponse());
-        VariableMap variables = Variables.createVariables();
-        if (outputVariableName != null) {
-            variables.putValue(outputVariableName, response.getResponse());
+            // set the output variable
+            log.debug("RESPONSE: {}", response.getResponse());
+            VariableMap variables = Variables.createVariables();
+            if (outputVariableName != null) {
+                variables.putValue(outputVariableName, response.getResponse());
+            }
+
+            // complete the external task
+            externalTaskService.complete(externalTask, variables);
+        } catch(ConnectorException e) {
+            log.error("CONNECTOR_ERROR: {}", e.getLocalizedMessage(), e);
+
+            String errorHandlingMethod = (String) getVariable(externalTask, PARAM_ERROR_HANDLING_METHOD, String.class);
+
+            if (errorHandlingMethod != null) {
+                log.debug("CONNECTOR_ERROR: Handling as '{}'", errorHandlingMethod);
+
+                switch(errorHandlingMethod) {
+                    case "BPMNError" -> externalTaskService.handleBpmnError(externalTask, "CONNECTOR_ERROR",
+                            e.getLocalizedMessage());
+                    case "Failure" -> {
+                        int retriesLeft;
+                        Integer retries = externalTask.getRetries();
+                        if (retries == null) {
+                            String retriesParam = (String) getVariable(externalTask, PARAM_RETRIES, String.class);
+                            if (retriesParam == null) {
+                                retriesLeft = 0; // Default to zero if not set
+                            } else {
+                                retriesLeft = Integer.parseInt(retriesParam);
+                            }
+                        } else {
+                            retriesLeft = retries - 1;
+                        }
+
+                        long retryBackoff; // Default to zero if not set
+                        String retryBackoffParam = (String) getVariable(externalTask, PARAM_RETRY_BACKOFF, String.class);
+                        if (retryBackoffParam != null) {
+                            retryBackoff = Long.parseLong(retryBackoffParam);
+                        } else {
+                            retryBackoff = 0; // Default to zero if not set
+                        }
+
+                        log.debug("HANDLE_FAILURE: Handling failure with '{}' retry(s) left and a backoff of '{}' second(s)",
+                                retriesLeft, retryBackoff);
+                        externalTaskService.handleFailure(externalTask, "HTTP request has failed",
+                                e.getLocalizedMessage(), retriesLeft, retryBackoff * 1000);
+                    }
+                    default -> {
+                        log.warn("Invalid error handing method {}, error will be ignored", errorHandlingMethod, e);
+                    }
+                }
+            } else {
+                log.warn("No error handing method specified, error will be ignored", e);
+            }
         }
-
-        // complete the external task
-        externalTaskService.complete(externalTask, variables);
 
         log.debug("EXTERNAL TASK EXECUTED: {} / {}", externalTask.getActivityId(), externalTask.getExecutionId());
     }
