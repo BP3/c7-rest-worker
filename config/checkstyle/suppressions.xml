@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC
+        "-//Checkstyle//DTD Checkstyle Suppressions 1.1//EN"
+        "https://checkstyle.org/dtds/suppressions_1_1.dtd">
+
+<suppressions>
+    <!-- Suppress errors in generated files -->
+    <suppress checks=".*" files="build[\/\\]generated-sources[\/\\].*\.java"/>
+
+    <suppress checks="JavadocMethod" files=".*\.java"/>
+    <suppress checks="JavadocPackage" files=".*\.java"/>
+    <suppress checks="JavadocType" files=".*\.java"/>
+    <suppress checks="JavadocVariable" files=".*\.java"/>
+
+    <!-- Suppress Javadoc and magic number errors in test files -->
+    <suppress checks="MagicNumber" files="src[\/\\](integration-)?test[\/\\].*\.java"/>
+    <suppress checks="AvoidStaticImport" files="src[\/\\](integration-)?test[\/\\].*\.java"/>
+</suppressions>

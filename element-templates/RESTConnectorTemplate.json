@@ -36,27 +36,27 @@
       "label": "Method",
       "group": "httpconfig",
       "type": "Dropdown",
-      "value": "get",
+      "value": "GET",
       "choices": [
         {
           "name": "DELETE",
-          "value": "delete"
+          "value": "DELETE"
         },
         {
           "name": "POST",
-          "value": "post"
+          "value": "POST"
         },
         {
           "name": "GET",
-          "value": "get"
+          "value": "GET"
         },
         {
           "name": "PATCH",
-          "value": "patch"
+          "value": "PATCH"
         },
         {
           "name": "PUT",
-          "value": "put"
+          "value": "PUT"
         }
       ],
       "editable": true,

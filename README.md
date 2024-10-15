@@ -78,16 +78,15 @@ Repo Contents
 ```bash
 docker run -it --rm --name gradle \
     --mount type=bind,src=$(PWD),dst=/builds -w /builds \
-        gradle:jdk17 gradle --build-cache assemble
+        gradle:jdk17 gradle --build-cache build
 ```
 The build can be modified using the following environment variables
 
-| Environment Variable        | Description                                           | Default        |
-|-----------------------------|-------------------------------------------------------|----------------|
-| CONNECTOR_VERSION           | The version to give to the built artifact(s)          | 0.0.1-SNAPSHOT |
-| CAMUNDA_VERSION             | The version of Camunda 7 that we are building against | 7.21.0         |
-| CAMUNDA_HTTP_CLIENT_VERSION | The version of the Camunda HTTP Client to use         | 1.6.0          |
-| REST_WORKER_ID              | The name of the                                       |                |
+| Environment Variable        | Description                                    | Default        |
+|-----------------------------|------------------------------------------------|----------------|
+| CONNECTOR_VERSION           | The version to give to the built artifact(s)   | 0.0.1-SNAPSHOT |
+| CAMUNDA_VERSION             | The version of Camunda 7 that we are building against | 7.21.0  |
+| CAMUNDA_HTTP_CLIENT_VERSION | The version of the Camunda HTTP Cliet to use            | 1.6.0 |
 
 ## Building the docker image locally
 
