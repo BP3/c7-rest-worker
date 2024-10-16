@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/@camunda/element-templates-json-schema/resources/schema.json",
-  "name": "REST Connector",
+  "name": "BP3 REST Connector",
   "id": "com.bp3:http-json:1",
   "appliesTo": [
     "bpmn:ServiceTask"
