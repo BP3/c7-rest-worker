@@ -98,7 +98,7 @@ public class C7RESTConnector implements ExternalTaskHandler {
             // set the status code
             log.debug("STATUS_CODE: {}", response.getStatusCode());
             if (statusCodeVariableName != null) {
-                variables.putValue("statusCode", response.getStatusCode());
+                variables.putValue(statusCodeVariableName, response.getStatusCode());
             }
 
             // complete the external task
