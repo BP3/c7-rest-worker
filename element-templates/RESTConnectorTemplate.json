@@ -81,7 +81,7 @@
         "notEmpty": true,
         "pattern": {
           "value": "^(=|(http://|https://|secrets|\\{\\{|\\$\\{).*$)",
-          "message": "Must be a http(s) URL"
+          "message": "Must be a valid http(s) URL, secret or expression"
         }
       }
     },
