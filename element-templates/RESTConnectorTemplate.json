@@ -128,6 +128,16 @@
       }
     },
     {
+      "label": "Status Code Variable",
+      "group": "httpconfig",
+      "type": "String",
+      "editable": true,
+      "binding": {
+        "type": "camunda:inputParameter",
+        "name": "httpStatusCodeParameter"
+      }
+    },
+    {
       "label": "Error Handling Method",
       "description": "Determine how connector errors should be handled and propagated back to the process.",
       "group": "httpconfig",

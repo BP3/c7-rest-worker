@@ -35,6 +35,7 @@ public class C7RESTConnector implements ExternalTaskHandler {
     public static final String PARAM_HTTP_PARAMETERS = "httpQueryParams";
     public static final String PARAM_HTTP_PAYLOAD = "httpPayload";
     public static final String PARAM_OUTPUT_VARIABLE = "httpOutParameter";
+    public static final String PARAM_STATUS_CODE_VARIABLE = "httpStatusCodeParameter";
     public static final String PARAM_ERROR_HANDLING_METHOD = "errorHandlingMethod";
     public static final String PARAM_RETRIES = "retries";
     public static final String PARAM_RETRY_BACKOFF = "retryBackoff";
@@ -67,6 +68,7 @@ public class C7RESTConnector implements ExternalTaskHandler {
         Map<String, String> httpHeaders = (Map<String, String>) getVariable(externalTask, PARAM_HTTP_HEADERS, Map.class);
         Map<String, String> httpQueryParams = (Map<String, String>) getVariable(externalTask, PARAM_HTTP_PARAMETERS, Map.class);
         String outputVariableName = (String) getVariable(externalTask, PARAM_OUTPUT_VARIABLE, String.class);
+        String statusCodeVariableName = (String) getVariable(externalTask, PARAM_OUTPUT_VARIABLE, String.class);
 
         // validate configuration...
         assert httpMethod != null : "HTTP method must not be null";
@@ -91,6 +93,12 @@ public class C7RESTConnector implements ExternalTaskHandler {
             VariableMap variables = Variables.createVariables();
             if (outputVariableName != null) {
                 variables.putValue(outputVariableName, response.getResponse());
+            }
+
+            // set the status code
+            log.debug("STATUS_CODE: {}", response.getStatusCode());
+            if (statusCodeVariableName != null) {
+                variables.putValue("statusCode", response.getStatusCode());
             }
 
             // complete the external task
