@@ -68,7 +68,7 @@ public class C7RESTConnector implements ExternalTaskHandler {
         Map<String, String> httpHeaders = (Map<String, String>) getVariable(externalTask, PARAM_HTTP_HEADERS, Map.class);
         Map<String, String> httpQueryParams = (Map<String, String>) getVariable(externalTask, PARAM_HTTP_PARAMETERS, Map.class);
         String outputVariableName = (String) getVariable(externalTask, PARAM_OUTPUT_VARIABLE, String.class);
-        String statusCodeVariableName = (String) getVariable(externalTask, PARAM_OUTPUT_VARIABLE, String.class);
+        String statusCodeVariableName = (String) getVariable(externalTask, PARAM_STATUS_CODE_VARIABLE, String.class);
 
         // validate configuration...
         assert httpMethod != null : "HTTP method must not be null";
