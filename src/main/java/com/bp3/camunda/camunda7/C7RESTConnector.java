@@ -104,7 +104,11 @@ public class C7RESTConnector implements ExternalTaskHandler {
 
             // complete the external task
             externalTaskService.complete(externalTask, variables);
-        } catch(ConnectorException e) {
+        }
+        // All exceptions need to be caught, so we can handle them gracefully, otherwise they get swallowed
+        // or the task worker will keep getting the same request, and it might just keep rolling around with
+        // the same exception
+        catch(Throwable e) {
             log.error("CONNECTOR_ERROR: {}", e.getLocalizedMessage(), e);
 
             String errorHandlingMethod = (String) getVariable(externalTask, PARAM_ERROR_HANDLING_METHOD, String.class);
@@ -149,13 +153,6 @@ public class C7RESTConnector implements ExternalTaskHandler {
             } else {
                 log.warn("No error handing method specified, error will be ignored", e);
             }
-        }
-        // An engine exception is more serious, so we just raise an incident as there is no point in retrying
-        catch(EngineException e) {
-            log.error("ENGINE_EXCEPTION: {}", e.getLocalizedMessage(), e);
-
-            externalTaskService.handleFailure(externalTask, "An engine exception has occurred",
-                    e.getLocalizedMessage(), 0, 0);
         }
 
         log.debug("EXTERNAL TASK EXECUTED: {} / {}", externalTask.getActivityId(), externalTask.getExecutionId());
