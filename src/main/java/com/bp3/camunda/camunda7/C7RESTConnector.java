@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
+import org.camunda.bpm.client.exception.EngineException;
 import org.camunda.bpm.client.spring.annotation.ExternalTaskSubscription;
 import org.camunda.bpm.client.task.ExternalTask;
 import org.camunda.bpm.client.task.ExternalTaskHandler;
@@ -148,6 +149,13 @@ public class C7RESTConnector implements ExternalTaskHandler {
             } else {
                 log.warn("No error handing method specified, error will be ignored", e);
             }
+        }
+        // An engine exception is more serious, so we just raise an incident as there is no point in retrying
+        catch(EngineException e) {
+            log.error("ENGINE_EXCEPTION: {}", e.getLocalizedMessage(), e);
+
+            externalTaskService.handleFailure(externalTask, "An engine exception has occurred",
+                    e.getLocalizedMessage(), 0, 0);
         }
 
         log.debug("EXTERNAL TASK EXECUTED: {} / {}", externalTask.getActivityId(), externalTask.getExecutionId());
