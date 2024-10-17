@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
+import org.camunda.bpm.client.exception.EngineException;
 import org.camunda.bpm.client.spring.annotation.ExternalTaskSubscription;
 import org.camunda.bpm.client.task.ExternalTask;
 import org.camunda.bpm.client.task.ExternalTaskHandler;
@@ -35,6 +36,7 @@ public class C7RESTConnector implements ExternalTaskHandler {
     public static final String PARAM_HTTP_PARAMETERS = "httpQueryParams";
     public static final String PARAM_HTTP_PAYLOAD = "httpPayload";
     public static final String PARAM_OUTPUT_VARIABLE = "httpOutParameter";
+    public static final String PARAM_STATUS_CODE_VARIABLE = "httpStatusCodeParameter";
     public static final String PARAM_ERROR_HANDLING_METHOD = "errorHandlingMethod";
     public static final String PARAM_RETRIES = "retries";
     public static final String PARAM_RETRY_BACKOFF = "retryBackoff";
@@ -67,6 +69,7 @@ public class C7RESTConnector implements ExternalTaskHandler {
         Map<String, String> httpHeaders = (Map<String, String>) getVariable(externalTask, PARAM_HTTP_HEADERS, Map.class);
         Map<String, String> httpQueryParams = (Map<String, String>) getVariable(externalTask, PARAM_HTTP_PARAMETERS, Map.class);
         String outputVariableName = (String) getVariable(externalTask, PARAM_OUTPUT_VARIABLE, String.class);
+        String statusCodeVariableName = (String) getVariable(externalTask, PARAM_STATUS_CODE_VARIABLE, String.class);
 
         // validate configuration...
         assert httpMethod != null : "HTTP method must not be null";
@@ -93,9 +96,19 @@ public class C7RESTConnector implements ExternalTaskHandler {
                 variables.putValue(outputVariableName, response.getResponse());
             }
 
+            // set the status code
+            log.debug("STATUS_CODE: {}", response.getStatusCode());
+            if (statusCodeVariableName != null) {
+                variables.putValue(statusCodeVariableName, response.getStatusCode());
+            }
+
             // complete the external task
             externalTaskService.complete(externalTask, variables);
-        } catch(ConnectorException e) {
+        }
+        // All exceptions need to be caught, so we can handle them gracefully, otherwise they get swallowed
+        // or the task worker will keep getting the same request, and it might just keep rolling around with
+        // the same exception
+        catch(Throwable e) {
             log.error("CONNECTOR_ERROR: {}", e.getLocalizedMessage(), e);
 
             String errorHandlingMethod = (String) getVariable(externalTask, PARAM_ERROR_HANDLING_METHOD, String.class);
