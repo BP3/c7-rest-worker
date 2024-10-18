@@ -16,5 +16,9 @@ RUN apk add --no-cache \
 ENTRYPOINT ["./docker-entrypoint.sh"]
 WORKDIR /worker
 
+RUN addgroup -g 1000 -S bp3global && \
+    adduser -u 1000 -S bp3user -G bp3global -h /worker -s /bin/bash -D bp3global
+USER bp3user
+
 # Add files from the build
-ADD . /worker
+ADD --chown=bp3user:bp3global . /worker
