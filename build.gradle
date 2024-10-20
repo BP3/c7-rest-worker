@@ -81,7 +81,7 @@ tasks.named('check') {
 dependencyCheck {
     nvd {
         validForHours = 24
-        apiKey = System.getenv('NIST_NVD_API_KEY') ?: nistNvdApiKey
+        apiKey = System.getenv('NIST_NVD_API_KEY') ?: project.hasProperty("nistNvdApiKey") ? nistNvdApiKey : null
     }
     failBuildOnCVSS = 7.0
     skipConfigurations = ["compileClasspath", "compileOnly", "spotbugs", "checkstyle"]
