@@ -26,7 +26,7 @@
       "label": "Worker Topic",
       "type": "Hidden",
       "editable": false,
-      "value": "bp3-http-json",
+      "value": "bp3-rest-connector",
       "binding": {
         "type": "property",
         "name": "camunda:topic"

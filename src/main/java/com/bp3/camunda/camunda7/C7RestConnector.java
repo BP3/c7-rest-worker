@@ -28,8 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 @Component
-// TODO this doesn't seem like the best topic name. Maybe "bp3-rest-connector"?
-@ExternalTaskSubscription("bp3-http-json")
+@ExternalTaskSubscription("bp3-rest-connector")
 @Slf4j
 public final class C7RestConnector implements ExternalTaskHandler {
     static final String PARAM_HTTP_METHOD = "httpMethod";
