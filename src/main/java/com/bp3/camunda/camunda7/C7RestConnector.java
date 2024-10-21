@@ -4,14 +4,12 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
-import org.camunda.bpm.client.exception.EngineException;
 import org.camunda.bpm.client.spring.annotation.ExternalTaskSubscription;
 import org.camunda.bpm.client.task.ExternalTask;
 import org.camunda.bpm.client.task.ExternalTaskHandler;
 import org.camunda.bpm.client.task.ExternalTaskService;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.engine.variable.Variables;
-import org.camunda.connect.ConnectorException;
 import org.camunda.connect.httpclient.HttpConnector;
 import org.camunda.connect.httpclient.HttpRequest;
 import org.camunda.connect.httpclient.HttpResponse;
@@ -28,7 +26,7 @@ import java.util.Map;
 @Component
 @ExternalTaskSubscription("bp3-http-json")
 @Slf4j
-public class C7RESTConnector implements ExternalTaskHandler {
+public class C7RestConnector implements ExternalTaskHandler {
 
     public static final String PARAM_HTTP_METHOD = "httpMethod";
     public static final String PARAM_HTTP_URL = "httpURL";
@@ -44,7 +42,7 @@ public class C7RESTConnector implements ExternalTaskHandler {
     private final HttpConnector httpConnector;
     private final ObjectMapper mapper;
 
-    public C7RESTConnector() {
+    public C7RestConnector() {
         this.httpConnector = new HttpConnectorImpl();
         this.mapper = new ObjectMapper();
         this.mapper.disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES);
@@ -52,7 +50,7 @@ public class C7RESTConnector implements ExternalTaskHandler {
         this.mapper.registerModule(new JavaTimeModule());
     }
 
-    public C7RESTConnector(HttpConnector httpConnector, ObjectMapper mapper) {
+    public C7RestConnector(HttpConnector httpConnector, ObjectMapper mapper) {
         this.httpConnector = httpConnector;
         this.mapper = mapper;
     }

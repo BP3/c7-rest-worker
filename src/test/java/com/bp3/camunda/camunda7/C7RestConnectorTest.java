@@ -1,6 +1,5 @@
 package com.bp3.camunda.camunda7;
 
-import com.bp3.camunda.camunda7.C7RESTConnector;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -18,16 +17,16 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-import static com.bp3.camunda.camunda7.C7RESTConnector.PARAM_HTTP_HEADERS;
-import static com.bp3.camunda.camunda7.C7RESTConnector.PARAM_HTTP_METHOD;
-import static com.bp3.camunda.camunda7.C7RESTConnector.PARAM_HTTP_PAYLOAD;
-import static com.bp3.camunda.camunda7.C7RESTConnector.PARAM_HTTP_URL;
-import static com.bp3.camunda.camunda7.C7RESTConnector.PARAM_OUTPUT_VARIABLE;
+import static com.bp3.camunda.camunda7.C7RestConnector.PARAM_HTTP_HEADERS;
+import static com.bp3.camunda.camunda7.C7RestConnector.PARAM_HTTP_METHOD;
+import static com.bp3.camunda.camunda7.C7RestConnector.PARAM_HTTP_PAYLOAD;
+import static com.bp3.camunda.camunda7.C7RestConnector.PARAM_HTTP_URL;
+import static com.bp3.camunda.camunda7.C7RestConnector.PARAM_OUTPUT_VARIABLE;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 
-class C7RESTConnectorTest {
+class C7RestConnectorTest {
 
     @Mock
     HttpConnector httpConnector;
@@ -43,7 +42,7 @@ class C7RESTConnectorTest {
     VariableMap variables;
 
     ObjectMapper mapper;
-    C7RESTConnector connector;
+    C7RestConnector connector;
 
     @BeforeEach
     public void init() {
@@ -55,7 +54,7 @@ class C7RESTConnectorTest {
         this.mapper.disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES);
         this.mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         this.mapper.registerModule(new JavaTimeModule());
-        this.connector = new C7RESTConnector(this.httpConnector, this.mapper);
+        this.connector = new C7RestConnector(this.httpConnector, this.mapper);
     }
 
     @Test
