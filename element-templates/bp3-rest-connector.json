@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/@camunda/element-templates-json-schema/resources/schema.json",
-  "name": "REST Connector",
+  "name": "BP3 REST Connector",
   "id": "com.bp3:http-json:1",
   "appliesTo": [
     "bpmn:ServiceTask"
@@ -26,7 +26,7 @@
       "label": "Worker Topic",
       "type": "Hidden",
       "editable": false,
-      "value": "bp3-http-json",
+      "value": "bp3-rest-connector",
       "binding": {
         "type": "property",
         "name": "camunda:topic"
@@ -80,8 +80,8 @@
       "constraints": {
         "notEmpty": true,
         "pattern": {
-          "value": "^(=|(http://|https://|secrets|\\{\\{).*$)",
-          "message": "Must be a http(s) URL"
+          "value": "^(=|(http://|https://|secrets|\\{\\{|\\$\\{).*$)",
+          "message": "Must be a valid http(s) URL, secret or expression"
         }
       }
     },
@@ -125,6 +125,16 @@
       "binding": {
         "type": "camunda:inputParameter",
         "name": "httpOutParameter"
+      }
+    },
+    {
+      "label": "Status Code Variable",
+      "group": "httpconfig",
+      "type": "String",
+      "editable": true,
+      "binding": {
+        "type": "camunda:inputParameter",
+        "name": "httpStatusCodeParameter"
       }
     },
     {

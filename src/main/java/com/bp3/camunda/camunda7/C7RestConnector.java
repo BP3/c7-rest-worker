@@ -11,7 +11,6 @@ import org.camunda.bpm.client.task.ExternalTaskHandler;
 import org.camunda.bpm.client.task.ExternalTaskService;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.engine.variable.Variables;
-import org.camunda.connect.ConnectorException;
 import org.camunda.connect.httpclient.HttpConnector;
 import org.camunda.connect.httpclient.HttpRequest;
 import org.camunda.connect.httpclient.HttpResponse;
@@ -28,8 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 @Component
-// TODO this doesn't seem like the best topic name. Maybe "bp3-rest-connector"?
-@ExternalTaskSubscription("bp3-http-json")
+@ExternalTaskSubscription("bp3-rest-connector")
 @Slf4j
 public final class C7RestConnector implements ExternalTaskHandler {
     static final String PARAM_HTTP_METHOD = "httpMethod";
@@ -38,6 +36,7 @@ public final class C7RestConnector implements ExternalTaskHandler {
     static final String PARAM_HTTP_PARAMETERS = "httpQueryParams";
     static final String PARAM_HTTP_PAYLOAD = "httpPayload";
     static final String PARAM_OUTPUT_VARIABLE = "httpOutParameter";
+    static final String PARAM_STATUS_CODE_VARIABLE = "httpStatusCodeParameter";
     static final String PARAM_ERROR_HANDLING_METHOD = "errorHandlingMethod";
     static final String PARAM_RETRIES = "retries";
     static final String PARAM_RETRY_BACKOFF = "retryBackoff";
@@ -94,9 +93,18 @@ public final class C7RestConnector implements ExternalTaskHandler {
                 variables.putValue(outputVariableName, response.getResponse());
             }
 
+            log.debug("STATUS_CODE: {}", response.getStatusCode());
+            String statusCodeVariableName = externalTask.getVariable(PARAM_STATUS_CODE_VARIABLE);
+            if (statusCodeVariableName != null) {
+                variables.putValue(statusCodeVariableName, response.getStatusCode());
+            }
+
             // complete the external task
             externalTaskService.complete(externalTask, variables);
-        } catch (ConnectorException e) {
+        } catch (Exception e) {
+            // All exceptions need to be caught, so we can handle them gracefully, otherwise they get swallowed
+            // or the task worker will keep getting the same request, and it might just keep rolling around with
+            // the same exception
             log.debug("CONNECTOR_ERROR", e);
 
             String errorHandlingMethod = externalTask.getVariable(PARAM_ERROR_HANDLING_METHOD);
