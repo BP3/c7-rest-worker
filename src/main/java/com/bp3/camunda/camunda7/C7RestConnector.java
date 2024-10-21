@@ -1,5 +1,6 @@
 package com.bp3.camunda.camunda7;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -10,6 +11,7 @@ import org.camunda.bpm.client.task.ExternalTaskHandler;
 import org.camunda.bpm.client.task.ExternalTaskService;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.engine.variable.Variables;
+import org.camunda.connect.ConnectorException;
 import org.camunda.connect.httpclient.HttpConnector;
 import org.camunda.connect.httpclient.HttpRequest;
 import org.camunda.connect.httpclient.HttpResponse;
@@ -20,68 +22,65 @@ import org.springframework.util.StringUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 @Component
+// TODO this doesn't seem like the best topic name. Maybe "bp3-rest-connector"?
 @ExternalTaskSubscription("bp3-http-json")
 @Slf4j
-public class C7RestConnector implements ExternalTaskHandler {
+public final class C7RestConnector implements ExternalTaskHandler {
+    static final String PARAM_HTTP_METHOD = "httpMethod";
+    static final String PARAM_HTTP_URL = "httpURL";
+    static final String PARAM_HTTP_HEADERS = "httpHeaders";
+    static final String PARAM_HTTP_PARAMETERS = "httpQueryParams";
+    static final String PARAM_HTTP_PAYLOAD = "httpPayload";
+    static final String PARAM_OUTPUT_VARIABLE = "httpOutParameter";
+    static final String PARAM_ERROR_HANDLING_METHOD = "errorHandlingMethod";
+    static final String PARAM_RETRIES = "retries";
+    static final String PARAM_RETRY_BACKOFF = "retryBackoff";
+    static final String ERROR_METHOD_BPMN_ERROR = "BPMNError";
+    static final String ERROR_METHOD_FAILURE = "Failure";
 
-    public static final String PARAM_HTTP_METHOD = "httpMethod";
-    public static final String PARAM_HTTP_URL = "httpURL";
-    public static final String PARAM_HTTP_HEADERS = "httpHeaders";
-    public static final String PARAM_HTTP_PARAMETERS = "httpQueryParams";
-    public static final String PARAM_HTTP_PAYLOAD = "httpPayload";
-    public static final String PARAM_OUTPUT_VARIABLE = "httpOutParameter";
-    public static final String PARAM_STATUS_CODE_VARIABLE = "httpStatusCodeParameter";
-    public static final String PARAM_ERROR_HANDLING_METHOD = "errorHandlingMethod";
-    public static final String PARAM_RETRIES = "retries";
-    public static final String PARAM_RETRY_BACKOFF = "retryBackoff";
+    private static final Set<String> PAYLOAD_VALID_FOR_METHODS = Set.of("POST", "PUT", "PATCH");
 
     private final HttpConnector httpConnector;
     private final ObjectMapper mapper;
 
     public C7RestConnector() {
-        this.httpConnector = new HttpConnectorImpl();
-        this.mapper = new ObjectMapper();
-        this.mapper.disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES);
-        this.mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        this.mapper.registerModule(new JavaTimeModule());
+        this(new HttpConnectorImpl());
     }
 
-    public C7RestConnector(HttpConnector httpConnector, ObjectMapper mapper) {
+    public C7RestConnector(final HttpConnector httpConnector) {
         this.httpConnector = httpConnector;
-        this.mapper = mapper;
+        this.mapper = new ObjectMapper()
+                .disable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES)
+                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .registerModule(new JavaTimeModule());
     }
 
     @Override
-    public void execute(ExternalTask externalTask, ExternalTaskService externalTaskService) {
+    public void execute(final ExternalTask externalTask, final ExternalTaskService externalTaskService) {
         log.debug("EXECUTE EXTERNAL TASK: {} / {}", externalTask.getActivityId(), externalTask.getExecutionId());
         log.debug("ALL VARIABLES: {}", externalTask.getAllVariables());
 
-        // extract the configuration from the external task variables
-        String httpMethod = (String) getVariable(externalTask, PARAM_HTTP_METHOD, String.class);
-        String httpURL = (String) getVariable(externalTask, PARAM_HTTP_URL, String.class);
-        String httpPayload = (String) getVariable(externalTask, PARAM_HTTP_PAYLOAD, String.class);
-        Map<String, String> httpHeaders = (Map<String, String>) getVariable(externalTask, PARAM_HTTP_HEADERS, Map.class);
-        Map<String, String> httpQueryParams = (Map<String, String>) getVariable(externalTask, PARAM_HTTP_PARAMETERS, Map.class);
-        String outputVariableName = (String) getVariable(externalTask, PARAM_OUTPUT_VARIABLE, String.class);
-        String statusCodeVariableName = (String) getVariable(externalTask, PARAM_STATUS_CODE_VARIABLE, String.class);
+        String httpMethod = externalTask.getVariable(PARAM_HTTP_METHOD);
+        if (httpMethod == null || httpMethod.isBlank()) {
+            httpMethod = "GET";
+        }
+        String httpURL = externalTask.getVariable(PARAM_HTTP_URL);
+        if (httpURL == null || httpURL.isBlank()) {
+            throw new RuntimeException("HTTP URL must not be null");
+        }
 
-        // validate configuration...
-        assert httpMethod != null : "HTTP method must not be null";
-        assert httpURL != null : "HTTP URL must not be null";
-
-        httpMethod = httpMethod.toUpperCase();
-
-        // setup the REST request
-        HttpRequest request = this.httpConnector.createRequest();
-        request.url(httpURL);
-        request.method(httpMethod);
-        setHeaders(request, httpHeaders);
-        setQueryParams(request, httpQueryParams);
-        setPayload(request, httpMethod, httpPayload);
+        HttpRequest request = httpConnector.createRequest()
+                .url(httpURL)
+                .method(httpMethod);
+        setHeaders(request, asMap(externalTask.getVariable(PARAM_HTTP_HEADERS)));
+        setQueryParams(request, asMap(externalTask.getVariable(PARAM_HTTP_PARAMETERS)));
+        setPayload(request, httpMethod, externalTask.getVariable(PARAM_HTTP_PAYLOAD));
 
         // call the REST service
         try {
@@ -90,38 +89,30 @@ public class C7RestConnector implements ExternalTaskHandler {
             // set the output variable
             log.debug("RESPONSE: {}", response.getResponse());
             VariableMap variables = Variables.createVariables();
+            String outputVariableName = externalTask.getVariable(PARAM_OUTPUT_VARIABLE);
             if (outputVariableName != null) {
                 variables.putValue(outputVariableName, response.getResponse());
             }
 
-            // set the status code
-            log.debug("STATUS_CODE: {}", response.getStatusCode());
-            if (statusCodeVariableName != null) {
-                variables.putValue(statusCodeVariableName, response.getStatusCode());
-            }
-
             // complete the external task
             externalTaskService.complete(externalTask, variables);
-        }
-        // All exceptions need to be caught, so we can handle them gracefully, otherwise they get swallowed
-        // or the task worker will keep getting the same request, and it might just keep rolling around with
-        // the same exception
-        catch(Throwable e) {
-            log.error("CONNECTOR_ERROR: {}", e.getLocalizedMessage(), e);
+        } catch (ConnectorException e) {
+            log.debug("CONNECTOR_ERROR", e);
 
-            String errorHandlingMethod = (String) getVariable(externalTask, PARAM_ERROR_HANDLING_METHOD, String.class);
+            String errorHandlingMethod = externalTask.getVariable(PARAM_ERROR_HANDLING_METHOD);
 
             if (errorHandlingMethod != null) {
                 log.debug("CONNECTOR_ERROR: Handling as '{}'", errorHandlingMethod);
 
-                switch(errorHandlingMethod) {
-                    case "BPMNError" -> externalTaskService.handleBpmnError(externalTask, "CONNECTOR_ERROR",
+                switch (errorHandlingMethod) {
+                    // TODO should the user be able to provide the errorCode?
+                    case ERROR_METHOD_BPMN_ERROR -> externalTaskService.handleBpmnError(externalTask, "CONNECTOR_ERROR",
                             e.getLocalizedMessage());
-                    case "Failure" -> {
+                    case ERROR_METHOD_FAILURE -> {
                         int retriesLeft;
                         Integer retries = externalTask.getRetries();
                         if (retries == null) {
-                            String retriesParam = (String) getVariable(externalTask, PARAM_RETRIES, String.class);
+                            String retriesParam = externalTask.getVariable(PARAM_RETRIES);
                             if (retriesParam == null) {
                                 retriesLeft = 0; // Default to zero if not set
                             } else {
@@ -132,21 +123,21 @@ public class C7RestConnector implements ExternalTaskHandler {
                         }
 
                         long retryBackoff; // Default to zero if not set
-                        String retryBackoffParam = (String) getVariable(externalTask, PARAM_RETRY_BACKOFF, String.class);
+                        String retryBackoffParam = externalTask.getVariable(PARAM_RETRY_BACKOFF);
                         if (retryBackoffParam != null) {
                             retryBackoff = Long.parseLong(retryBackoffParam);
                         } else {
                             retryBackoff = 0; // Default to zero if not set
                         }
 
-                        log.debug("HANDLE_FAILURE: Handling failure with '{}' retry(s) left and a backoff of '{}' second(s)",
+                        log.debug("HANDLE_FAILURE: Handling failure with '{}' retry(s) left"
+                                        + " and a backoff of '{}' second(s)",
                                 retriesLeft, retryBackoff);
-                        externalTaskService.handleFailure(externalTask, "HTTP request has failed",
-                                e.getLocalizedMessage(), retriesLeft, retryBackoff * 1000);
+                        externalTaskService.handleFailure(externalTask, "HTTP request failed",
+                                e.getLocalizedMessage(), retriesLeft, Duration.ofSeconds(retryBackoff).toMillis());
                     }
-                    default -> {
-                        log.warn("Invalid error handing method {}, error will be ignored", errorHandlingMethod, e);
-                    }
+                    default -> log.warn("Invalid error handing method {}, error will be ignored",
+                            errorHandlingMethod, e);
                 }
             } else {
                 log.warn("No error handing method specified, error will be ignored", e);
@@ -156,72 +147,50 @@ public class C7RestConnector implements ExternalTaskHandler {
         log.debug("EXTERNAL TASK EXECUTED: {} / {}", externalTask.getActivityId(), externalTask.getExecutionId());
     }
 
-    private void setPayload(HttpRequest request, String httpMethod, String httpPayload) {
+    private void setPayload(final HttpRequest request, final String httpMethod, final String httpPayload) {
         if (httpPayload == null) {
             return;
         }
-        // payload is only allowed for certain HTTP methods
-        if (httpMethod.equals("POST") || httpMethod.equals("PUT") || httpMethod.equals("PATCH")) {
+        if (PAYLOAD_VALID_FOR_METHODS.contains(httpMethod)) {
             request.payload(httpPayload);
+        } else {
+            log.warn("Ignoring payload because the http method is not one of: {}", PAYLOAD_VALID_FOR_METHODS);
         }
     }
 
-    private void setQueryParams(HttpRequest request, Map<String, String> httpQueryParams) {
-        if (httpQueryParams == null) {
-            return;
-        }
-        for (String key : httpQueryParams.keySet()) {
-            Object value = httpQueryParams.get(key);
-            request.setRequestParameter(key, value);
+    private void setQueryParams(final HttpRequest request, final Map<String, String> params) {
+        if (params != null) {
+            params.forEach(request::setRequestParameter);
         }
     }
 
-    private void setHeaders(HttpRequest request, Map<String, String> httpHeaders) {
-        if (httpHeaders == null) {
-            return;
-        }
-        for (String key : httpHeaders.keySet()) {
-            String value = httpHeaders.get(key);
-            request.header(StringUtils.trimAllWhitespace(key), value);
+    private void setHeaders(final HttpRequest request, final Map<String, String> headers) {
+        if (headers != null) {
+            headers.forEach((key, value) -> request.header(StringUtils.trimAllWhitespace(key), value));
         }
     }
 
-    private Object getVariable(ExternalTask externalTask, String paramName, Class<?> clazz) {
-        String var = externalTask.getVariable(paramName);
-        if (var == null) {
-            // variable not supplied
+    Map<String, String> asMap(final String value) {
+        if (value == null || value.isBlank()) {
             return null;
         }
-        if (clazz.equals(String.class)) {
-            return var;
-        }
-        if (clazz.equals(Integer.class)) {
-            return Integer.parseInt(var);
-        }
-        if (clazz.equals(Map.class)) {
-            if (var.startsWith("{")) {
-                // map specified as a JSON object
-                try {
-                    return this.mapper.readValue(new BufferedReader(new StringReader(var)), Map.class);
-                }
-                catch (IOException e) {
-                    throw new RuntimeException(e);
+        if (value.startsWith("{")) {
+            try {
+                return mapper.readValue(new BufferedReader(new StringReader(value)), new TypeReference<>() { });
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            Map<String, String> map = new HashMap<>();
+            for (String pair : value.trim().split("\\s*;\\s*")) {
+                String[] parts = pair.split("\\s*=\\s*");
+                if (parts.length == 2) {
+                    map.put(parts[0], parts[1]);
+                } else {
+                    throw new RuntimeException("Invalid key/value pair: " + pair);
                 }
             }
-            else {
-                Map<String,String> map = new HashMap<>();
-                String[] keyValuePairs = var.split(";");
-                for (String kvp : keyValuePairs) {
-                    String[] parts = kvp.split("=");
-                    if (parts.length == 2) {
-                        map.put(parts[0], parts[1]);
-                    }
-                }
-                return map;
-            }
+            return map;
         }
-        // unsupported variable type... return null
-        return null;
     }
-
 }
