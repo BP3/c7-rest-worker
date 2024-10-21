@@ -38,6 +38,7 @@ public final class C7RestConnector implements ExternalTaskHandler {
     static final String PARAM_HTTP_PARAMETERS = "httpQueryParams";
     static final String PARAM_HTTP_PAYLOAD = "httpPayload";
     static final String PARAM_OUTPUT_VARIABLE = "httpOutParameter";
+    static final String PARAM_STATUS_CODE_VARIABLE = "httpStatusCodeParameter";
     static final String PARAM_ERROR_HANDLING_METHOD = "errorHandlingMethod";
     static final String PARAM_RETRIES = "retries";
     static final String PARAM_RETRY_BACKOFF = "retryBackoff";
@@ -94,9 +95,19 @@ public final class C7RestConnector implements ExternalTaskHandler {
                 variables.putValue(outputVariableName, response.getResponse());
             }
 
+            log.debug("STATUS_CODE: {}", response.getStatusCode());
+            String statusCodeVariableName = externalTask.getVariable(PARAM_STATUS_CODE_VARIABLE);
+            if (statusCodeVariableName != null) {
+                variables.putValue(statusCodeVariableName, response.getStatusCode());
+            }
+
             // complete the external task
             externalTaskService.complete(externalTask, variables);
-        } catch (ConnectorException e) {
+        }
+        // All exceptions need to be caught, so we can handle them gracefully, otherwise they get swallowed
+        // or the task worker will keep getting the same request, and it might just keep rolling around with
+        // the same exception
+        catch (Exception e) {
             log.debug("CONNECTOR_ERROR", e);
 
             String errorHandlingMethod = externalTask.getVariable(PARAM_ERROR_HANDLING_METHOD);
