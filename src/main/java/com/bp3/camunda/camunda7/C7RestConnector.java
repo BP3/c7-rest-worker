@@ -11,7 +11,6 @@ import org.camunda.bpm.client.task.ExternalTaskHandler;
 import org.camunda.bpm.client.task.ExternalTaskService;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.engine.variable.Variables;
-import org.camunda.connect.ConnectorException;
 import org.camunda.connect.httpclient.HttpConnector;
 import org.camunda.connect.httpclient.HttpRequest;
 import org.camunda.connect.httpclient.HttpResponse;
@@ -102,11 +101,10 @@ public final class C7RestConnector implements ExternalTaskHandler {
 
             // complete the external task
             externalTaskService.complete(externalTask, variables);
-        }
-        // All exceptions need to be caught, so we can handle them gracefully, otherwise they get swallowed
-        // or the task worker will keep getting the same request, and it might just keep rolling around with
-        // the same exception
-        catch (Exception e) {
+        } catch (Exception e) {
+            // All exceptions need to be caught, so we can handle them gracefully, otherwise they get swallowed
+            // or the task worker will keep getting the same request, and it might just keep rolling around with
+            // the same exception
             log.debug("CONNECTOR_ERROR", e);
 
             String errorHandlingMethod = externalTask.getVariable(PARAM_ERROR_HANDLING_METHOD);
