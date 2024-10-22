@@ -17,7 +17,7 @@ ENTRYPOINT ["./docker-entrypoint.sh"]
 WORKDIR /worker
 
 RUN addgroup -g 1000 -S bp3 && \
-    adduser -u 1000 -S bp3user -G bp3 -h /worker -s /bin/bash --defaults bp3user
+    adduser -u 1000 -S bp3user -G bp3 -h /worker -s /bin/bash -D bp3user
 USER bp3user
 
 # Add files from the build
