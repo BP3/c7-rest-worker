@@ -14,6 +14,7 @@ import org.mockito.ArgumentCaptor;
 import java.util.Map;
 import java.util.Set;
 
+import static com.bp3.camunda.camunda7.C7RestConnector.ERROR_METHOD_BPMN_ERROR;
 import static com.bp3.camunda.camunda7.C7RestConnector.PARAM_ERROR_HANDLING_METHOD;
 import static com.bp3.camunda.camunda7.C7RestConnector.PARAM_HTTP_HEADERS;
 import static com.bp3.camunda.camunda7.C7RestConnector.PARAM_HTTP_METHOD;
@@ -28,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -86,11 +88,17 @@ class C7RestConnectorTest {
     }
 
     @Test
-    void givenNoHttpUrlSpecifiedWhenExecutedThenAnExceptionIsThrown() {
+    void givenNoHttpUrlSpecifiedWhenExecutedThenHandledAsBpmnError() {
         when(externalTask.getVariable(PARAM_HTTP_URL))
                 .thenReturn(null);
 
-        assertThrows(RuntimeException.class, () -> connector.execute(externalTask, externalTaskService));
+        when(externalTask.getVariable(PARAM_ERROR_HANDLING_METHOD))
+                .thenReturn(ERROR_METHOD_BPMN_ERROR);
+
+        connector.execute(externalTask, externalTaskService);
+
+        verify(externalTaskService, times(1))
+                .handleBpmnError(externalTask, "CONNECTOR_ERROR", "HTTP URL must not be null");
     }
 
     @Test

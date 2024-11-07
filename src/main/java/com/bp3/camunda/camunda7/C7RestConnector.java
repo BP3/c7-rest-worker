@@ -69,20 +69,21 @@ public final class C7RestConnector implements ExternalTaskHandler {
         if (httpMethod == null || httpMethod.isBlank()) {
             httpMethod = "GET";
         }
-        String httpURL = externalTask.getVariable(PARAM_HTTP_URL);
-        if (httpURL == null || httpURL.isBlank()) {
-            throw new RuntimeException("HTTP URL must not be null");
-        }
 
-        HttpRequest request = httpConnector.createRequest()
-                .url(httpURL)
-                .method(httpMethod);
-        setHeaders(request, asMap(externalTask.getVariable(PARAM_HTTP_HEADERS)));
-        setQueryParams(request, asMap(externalTask.getVariable(PARAM_HTTP_PARAMETERS)));
-        setPayload(request, httpMethod, externalTask.getVariable(PARAM_HTTP_PAYLOAD));
-
-        // call the REST service
         try {
+            String httpURL = externalTask.getVariable(PARAM_HTTP_URL);
+            if (httpURL == null || httpURL.isBlank()) {
+                throw new IllegalArgumentException("HTTP URL must not be null");
+            }
+
+            HttpRequest request = httpConnector.createRequest()
+                    .url(httpURL)
+                    .method(httpMethod);
+            setHeaders(request, asMap(externalTask.getVariable(PARAM_HTTP_HEADERS)));
+            setQueryParams(request, asMap(externalTask.getVariable(PARAM_HTTP_PARAMETERS)));
+            setPayload(request, httpMethod, externalTask.getVariable(PARAM_HTTP_PAYLOAD));
+
+            // call the REST service
             HttpResponse response = request.execute();
 
             // set the output variable
