@@ -45,7 +45,7 @@ dependencies {
     implementation('com.fasterxml.jackson.datatype:jackson-datatype-jsr310')
 
     // workaround for external task dependency issue - https://github.com/camunda/camunda-bpm-platform/issues/3829
-    implementation("jakarta.xml.bind:jakarta.xml.bind-api:${jakartaXmlBindApiVersion}")
+    runtimeOnly("jakarta.xml.bind:jakarta.xml.bind-api")
 
     testImplementation('org.springframework.boot:spring-boot-starter-test')
     testRuntimeOnly('org.junit.platform:junit-platform-launcher')
