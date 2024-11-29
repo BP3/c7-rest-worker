@@ -3,7 +3,8 @@
   "name": "BP3 REST Connector",
   "id": "com.bp3:http-json:1",
   "appliesTo": [
-    "bpmn:ServiceTask"
+    "bpmn:ServiceTask",
+    "bpmn:SendTask"
   ],
   "groups": [
     {
