@@ -4,8 +4,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
-import org.camunda.bpm.client.spring.annotation.ExternalTaskSubscription;
+import org.camunda.bpm.client.ExternalTaskClient;
 import org.camunda.bpm.client.task.ExternalTask;
 import org.camunda.bpm.client.task.ExternalTaskHandler;
 import org.camunda.bpm.client.task.ExternalTaskService;
@@ -15,6 +16,7 @@ import org.camunda.connect.httpclient.HttpConnector;
 import org.camunda.connect.httpclient.HttpRequest;
 import org.camunda.connect.httpclient.HttpResponse;
 import org.camunda.connect.httpclient.impl.HttpConnectorImpl;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -27,7 +29,6 @@ import java.util.Map;
 import java.util.Set;
 
 @Component
-@ExternalTaskSubscription("bp3-rest-connector")
 @Slf4j
 public final class C7RestConnector implements ExternalTaskHandler {
     static final String PARAM_HTTP_METHOD = "httpMethod";
@@ -48,6 +49,18 @@ public final class C7RestConnector implements ExternalTaskHandler {
     private final HttpConnector httpConnector;
     private final ObjectMapper mapper;
 
+    @Value("${camunda.bpm.client.base-url}")
+    private String engineEndpoint;
+
+    @Value("${TOPIC_NAME:bp3-rest-connector}")
+    private String topicName;
+
+    @Value("${camunda.bpm.client.async-response-timeout}")
+    private Long asyncResponseTimeout;
+
+    @Value("${camunda.bpm.client.subscriptions.bp3-http-json.lock-duration}")
+    private Long lockDuration;
+
     public C7RestConnector() {
         this(new HttpConnectorImpl());
     }
@@ -60,9 +73,38 @@ public final class C7RestConnector implements ExternalTaskHandler {
                 .registerModule(new JavaTimeModule());
     }
 
-    @Override
+    /**
+     * Called in a PostConstruct because the properties will have been loaded at this point once the class
+     * has been constructed.
+     *
+     * The purpose of creating the External Task Client using the builder and not the @ExternalTaskSubscription
+     * annotation is, so we can configure the required topic this client will be subscribing to, which cannot be
+     * done using the @ExternalTaskSubscription annotation.
+     */
+    @PostConstruct
+    public void initTaskClient() {
+        log.debug("Initialising the External Task Client with the following properties:");
+        log.debug("    Engine end point = {}", engineEndpoint);
+        log.debug("    Topic name = {}", topicName);
+        log.debug("    Async response timeout (ms) = {}", asyncResponseTimeout);
+        log.debug("    Task lock duration (ms) = {}", lockDuration);
+
+        ExternalTaskClient client = ExternalTaskClient.create()
+                .baseUrl(engineEndpoint)
+                .asyncResponseTimeout(asyncResponseTimeout)
+                .build();
+
+        client.subscribe(topicName)
+                .lockDuration(lockDuration)
+                .handler(this::execute)
+                .open();
+
+        log.debug("External Task Client initialised and ready to accept tasks");
+    }
+
     public void execute(final ExternalTask externalTask, final ExternalTaskService externalTaskService) {
-        log.debug("EXECUTE EXTERNAL TASK: {} / {}", externalTask.getActivityId(), externalTask.getExecutionId());
+        log.debug("EXECUTE EXTERNAL TASK: {} / {} / {}", externalTask.getTopicName(), externalTask.getActivityId(),
+                externalTask.getExecutionId());
         log.debug("ALL VARIABLES: {}", externalTask.getAllVariables());
 
         String httpMethod = externalTask.getVariable(PARAM_HTTP_METHOD);
