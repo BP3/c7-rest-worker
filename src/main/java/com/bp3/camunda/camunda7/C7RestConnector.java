@@ -52,7 +52,7 @@ public final class C7RestConnector implements ExternalTaskHandler {
     @Value("${camunda.bpm.client.base-url}")
     private String engineEndpoint;
 
-    @Value("${TOPIC_NAME:bp3-rest-connector}")
+    @Value("${REST_TOPIC_NAME:bp3-rest-connector}")
     private String topicName;
 
     @Value("${camunda.bpm.client.async-response-timeout}")
