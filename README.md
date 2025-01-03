@@ -82,11 +82,11 @@ docker run -it --rm --name gradle \
 ```
 The build can be modified using the following environment variables
 
-| Environment Variable        | Description                                    | Default        |
-|-----------------------------|------------------------------------------------|----------------|
-| CONNECTOR_VERSION           | The version to give to the built artifact(s)   | 0.0.1-SNAPSHOT |
+| Environment Variable        | Description                                           | Default        |
+|-----------------------------|-------------------------------------------------------|----------------|
+| CONNECTOR_VERSION           | The version to give to the built artifact(s)          | 0.0.1-SNAPSHOT |
 | CAMUNDA_VERSION             | The version of Camunda 7 that we are building against | 7.21.0  |
-| CAMUNDA_HTTP_CLIENT_VERSION | The version of the Camunda HTTP Cliet to use            | 1.6.0 |
+| CAMUNDA_HTTP_CLIENT_VERSION | The version of the Camunda HTTP Client to use         | 1.6.0 |
 
 ## Building the docker image locally
 
@@ -105,6 +105,8 @@ are supported
 | CLIENT_ASYNC_TIMEOUT | Maximum duration of the long-polling request                       | 1000                              |
 | CLIENT_LOCK_DURATION | How long the service tasks are locked until they can fetched again | 10000                             |
 | LOG_LEVEL            | Amount of log messages that will be output                         | DEBUG                             |
+| REST_TOPIC_NAME      | The name of the topic this external task worker is subscribed to   | bp3-rest-connector                |
+ 
 
 ## Running the worker as a jarfile
 ```bash
