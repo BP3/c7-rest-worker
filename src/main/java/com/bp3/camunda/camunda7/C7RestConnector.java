@@ -102,6 +102,7 @@ public final class C7RestConnector implements ExternalTaskHandler {
         log.debug("External Task Client initialised and ready to accept tasks");
     }
 
+    @Override
     public void execute(final ExternalTask externalTask, final ExternalTaskService externalTaskService) {
         log.debug("EXECUTE EXTERNAL TASK: {} / {} / {}", externalTask.getTopicName(), externalTask.getActivityId(),
                 externalTask.getExecutionId());
