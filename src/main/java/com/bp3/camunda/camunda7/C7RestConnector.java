@@ -58,7 +58,7 @@ public final class C7RestConnector implements ExternalTaskHandler {
     @Value("${camunda.bpm.client.async-response-timeout}")
     private Long asyncResponseTimeout;
 
-    @Value("${camunda.bpm.client.subscriptions.bp3-http-json.lock-duration}")
+    @Value("${camunda.bpm.client.subscriptions.bp3-rest-connector.lock-duration}")
     private Long lockDuration;
 
     public C7RestConnector() {
