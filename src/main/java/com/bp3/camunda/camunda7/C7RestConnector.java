@@ -49,16 +49,16 @@ public final class C7RestConnector implements ExternalTaskHandler {
     private final HttpConnector httpConnector;
     private final ObjectMapper mapper;
 
-    @Value("${camunda.bpm.client.base-url}")
-    private String engineEndpoint;
-
     @Value("${REST_TOPIC_NAME:bp3-rest-connector}")
     private String topicName;
+
+    @Value("${camunda.bpm.client.base-url}")
+    private String engineEndpoint;
 
     @Value("${camunda.bpm.client.async-response-timeout}")
     private Long asyncResponseTimeout;
 
-    @Value("${camunda.bpm.client.subscriptions.bp3-rest-connector.lock-duration}")
+    @Value("${camunda.bpm.client.lock-duration}")
     private Long lockDuration;
 
     public C7RestConnector() {
