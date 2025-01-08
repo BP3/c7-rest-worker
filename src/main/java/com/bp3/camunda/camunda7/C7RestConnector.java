@@ -84,10 +84,10 @@ public final class C7RestConnector implements ExternalTaskHandler {
     @PostConstruct
     public void initTaskClient() {
         log.debug("Initialising the External Task Client with the following properties:");
-        log.debug("    Engine end point = {}", engineEndpoint);
-        log.debug("    Topic name = {}", topicName);
-        log.debug("    Async response timeout (ms) = {}", asyncResponseTimeout);
-        log.debug("    Task lock duration (ms) = {}", lockDuration);
+        log.debug("Engine end point = {}".indent(4), engineEndpoint);
+        log.debug("Topic name = {}".indent(4), topicName);
+        log.debug("Async response timeout (ms) = {}".indent(4), asyncResponseTimeout);
+        log.debug("Task lock duration (ms) = {}".indent(4), lockDuration);
 
         ExternalTaskClient client = ExternalTaskClient.create()
                 .baseUrl(engineEndpoint)
