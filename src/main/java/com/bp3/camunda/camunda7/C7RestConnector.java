@@ -44,8 +44,6 @@ public final class C7RestConnector implements ExternalTaskHandler {
     static final String ERROR_METHOD_BPMN_ERROR = "BPMNError";
     static final String ERROR_METHOD_FAILURE = "Failure";
 
-    static final int LOG_INDENT = 4;
-
     private static final Set<String> PAYLOAD_VALID_FOR_METHODS = Set.of("POST", "PUT", "PATCH");
 
     private final HttpConnector httpConnector;
@@ -86,10 +84,10 @@ public final class C7RestConnector implements ExternalTaskHandler {
     @PostConstruct
     public void initTaskClient() {
         log.debug("Initialising the External Task Client with the following properties:");
-        log.debug("Engine end point = {}".indent(LOG_INDENT), engineEndpoint);
-        log.debug("Topic name = {}".indent(LOG_INDENT), topicName);
-        log.debug("Async response timeout (ms) = {}".indent(LOG_INDENT), asyncResponseTimeout);
-        log.debug("Task lock duration (ms) = {}".indent(LOG_INDENT), lockDuration);
+        log.debug("    Engine end point = {}", engineEndpoint);
+        log.debug("    Topic name = {}", topicName);
+        log.debug("    Async response timeout (ms) = {}", asyncResponseTimeout);
+        log.debug("    Task lock duration (ms) = {}", lockDuration);
 
         ExternalTaskClient client = ExternalTaskClient.create()
                 .baseUrl(engineEndpoint)
