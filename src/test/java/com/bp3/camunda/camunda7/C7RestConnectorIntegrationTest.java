@@ -21,7 +21,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class C7RestConnectorRealServiceCallTest {
+class C7RestConnectorIntegrationTest {
     private ExternalTask externalTask;
     private ExternalTaskService externalTaskService;
 
