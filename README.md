@@ -28,7 +28,7 @@ For example, in this diagram what we see the original is a custom REST implement
 But this can be replaced with a call to the BP3 REST Connector as shown below.
 Here we are making use of the provided Connector Template to the underlying BP3 REST Connector
 
-![REST call using the Http connector](images/
+![REST call using the Http connector](images/connector-rest-call.png "Connector REST call example")
 
 Whilst this may appear a small change to your process the implications can be significant. 
 Here are some of the pros & cons
