@@ -28,7 +28,7 @@ For example, in this diagram what we see the original is a custom REST implement
 But this can be replaced with a call to the BP3 REST Connector as shown below.
 Here we are making use of the provided Connector Template to the underlying BP3 REST Connector
 
-![REST call using the Http connector](images/connector-rest-call.png "Connector REST call example")
+![REST call using the Http connector](images/
 
 Whilst this may appear a small change to your process the implications can be significant. 
 Here are some of the pros & cons
@@ -127,3 +127,15 @@ where 'options' are a list of flags for the 'java' command, e.g. -Dxxx=yyy
 ```
 
 which you can obviously adapt to your own circumstances.
+
+# Test BPMN Process
+
+There is a test BPMN process showing how to use the HTTP connector in a process that can be found [here](src/test/resources/bpmn/rest-worker-test.bpmn).
+
+In conjunction with the element template that can be found [here](element-templates/bp3-rest-connector.json), you can make available the element template to the process in the Desktop Modeller by following the instructions here: https://docs.camunda.io/docs/components/modeler/desktop-modeler/element-templates/configuring-templates/
+
+Once completed, you will be able to see a couple of examples of how to use the connector. Below are screenshots of some examples from the process model:
+
+![REST GET using the Http connector](images/template-config-example-1.png "REST GET using the Http connector")
+
+![REST POST using the Http connector](images/template-config-example-2.png "REST POST using the Http connector")
