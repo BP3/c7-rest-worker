@@ -61,6 +61,9 @@ public final class C7RestConnector implements ExternalTaskHandler {
     @Value("${camunda.bpm.client.lock-duration}")
     private Long lockDuration;
 
+    @Value("${camunda.bpm.client.max-tasks}")
+    private Integer maxTasks;
+
     public C7RestConnector() {
         this(new HttpConnectorImpl());
     }
@@ -88,10 +91,12 @@ public final class C7RestConnector implements ExternalTaskHandler {
         log.debug("    Topic name = {}", topicName);
         log.debug("    Async response timeout (ms) = {}", asyncResponseTimeout);
         log.debug("    Task lock duration (ms) = {}", lockDuration);
+        log.debug("    Max tasks = {}", maxTasks);
 
         ExternalTaskClient client = ExternalTaskClient.create()
                 .baseUrl(engineEndpoint)
                 .asyncResponseTimeout(asyncResponseTimeout)
+                .maxTasks(maxTasks)
                 .build();
 
         client.subscribe(topicName)
