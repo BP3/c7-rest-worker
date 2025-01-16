@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0kdz2fy" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.27.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.21.0">
+  <bpmn:process id="Process_RESTWorkerTest" name="REST Worker Test" isExecutable="true" camunda:historyTimeToLive="0">
+    <bpmn:startEvent id="StartEvent">
+      <bpmn:outgoing>Flow_1j0dq3n</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:sequenceFlow id="Flow_1j0dq3n" sourceRef="StartEvent" targetRef="Activity_Status200" />
+    <bpmn:endEvent id="EndEvent">
+      <bpmn:incoming>Flow_1bkq82u</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0gbvk7h" sourceRef="Activity_Status200" targetRef="Activity_GetUUID" />
+    <bpmn:serviceTask id="Activity_Status200" name="Status 200" camunda:modelerTemplate="com.bp3:http-json:1" camunda:type="external" camunda:topic="bp3-rest-connector">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="httpMethod">GET</camunda:inputParameter>
+          <camunda:inputParameter name="httpHeaders" />
+          <camunda:inputParameter name="httpQueryParams" />
+          <camunda:inputParameter name="httpPayload" />
+          <camunda:inputParameter name="httpOutParameter" />
+          <camunda:inputParameter name="httpURL">http://httpbin.org/status/200</camunda:inputParameter>
+          <camunda:inputParameter name="httpStatusCodeParameter">statusCode</camunda:inputParameter>
+          <camunda:inputParameter name="errorHandlingMethod">Failure</camunda:inputParameter>
+          <camunda:inputParameter name="retries">3</camunda:inputParameter>
+          <camunda:inputParameter name="retryBackoff">10</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1j0dq3n</bpmn:incoming>
+      <bpmn:outgoing>Flow_0gbvk7h</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Activity_GetUUID" name="Get UUID" camunda:modelerTemplate="com.bp3:http-json:1" camunda:type="external" camunda:topic="bp3-rest-connector">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="httpHeaders" />
+          <camunda:inputParameter name="httpQueryParams" />
+          <camunda:inputParameter name="httpStatusCodeParameter" />
+          <camunda:inputParameter name="httpMethod">POST</camunda:inputParameter>
+          <camunda:inputParameter name="httpURL">http://httpbin.org/anything</camunda:inputParameter>
+          <camunda:inputParameter name="httpPayload">{ "someField": "someValue" }</camunda:inputParameter>
+          <camunda:inputParameter name="httpOutParameter">result</camunda:inputParameter>
+          <camunda:inputParameter name="errorHandlingMethod">Failure</camunda:inputParameter>
+          <camunda:inputParameter name="retries">3</camunda:inputParameter>
+          <camunda:inputParameter name="retryBackoff">10</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0gbvk7h</bpmn:incoming>
+      <bpmn:outgoing>Flow_1bkq82u</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_1bkq82u" sourceRef="Activity_GetUUID" targetRef="EndEvent" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_RESTWorkerTest">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent">
+        <dc:Bounds x="152" y="99" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_11cuokq_di" bpmnElement="EndEvent">
+        <dc:Bounds x="542" y="99" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="467" y="142" width="68" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_07fct23_di" bpmnElement="Activity_Status200">
+        <dc:Bounds x="240" y="77" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_03ffapg" bpmnElement="Activity_GetUUID">
+        <dc:Bounds x="390" y="77" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1j0dq3n_di" bpmnElement="Flow_1j0dq3n">
+        <di:waypoint x="188" y="117" />
+        <di:waypoint x="240" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0gbvk7h_di" bpmnElement="Flow_0gbvk7h">
+        <di:waypoint x="340" y="117" />
+        <di:waypoint x="390" y="117" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1bkq82u_di" bpmnElement="Flow_1bkq82u">
+        <di:waypoint x="490" y="117" />
+        <di:waypoint x="542" y="117" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

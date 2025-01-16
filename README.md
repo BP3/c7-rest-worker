@@ -105,6 +105,8 @@ are supported
 | CLIENT_ASYNC_TIMEOUT | Maximum duration of the long-polling request                       | 1000                              |
 | CLIENT_LOCK_DURATION | How long the service tasks are locked until they can fetched again | 10000                             |
 | LOG_LEVEL            | Amount of log messages that will be output                         | DEBUG                             |
+| REST_TOPIC_NAME      | The name of the topic this external task worker is subscribed to   | bp3-rest-connector                |
+ 
 
 ## Running the worker as a jarfile
 ```bash
@@ -125,3 +127,15 @@ where 'options' are a list of flags for the 'java' command, e.g. -Dxxx=yyy
 ```
 
 which you can obviously adapt to your own circumstances.
+
+# Test BPMN Process
+
+There is a test BPMN process showing how to use the HTTP connector in a process that can be found [here](src/test/resources/bpmn/rest-worker-test.bpmn).
+
+In conjunction with the element template that can be found [here](element-templates/bp3-rest-connector.json), you can make available the element template to the process in the Desktop Modeller by following the instructions here: https://docs.camunda.io/docs/components/modeler/desktop-modeler/element-templates/configuring-templates/
+
+Once completed, you will be able to see a couple of examples of how to use the connector. Below are screenshots of some examples from the process model:
+
+![REST GET using the Http connector](images/template-config-example-1.png "REST GET using the Http connector")
+
+![REST POST using the Http connector](images/template-config-example-2.png "REST POST using the Http connector")

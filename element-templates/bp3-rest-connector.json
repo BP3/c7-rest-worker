@@ -25,8 +25,8 @@
     },
     {
       "label": "Worker Topic",
-      "type": "Hidden",
-      "editable": false,
+      "type": "String",
+      "editable": true,
       "value": "bp3-rest-connector",
       "binding": {
         "type": "property",
