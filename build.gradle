@@ -48,6 +48,11 @@ dependencies {
     runtimeOnly("jakarta.xml.bind:jakarta.xml.bind-api")
 
     testImplementation('org.springframework.boot:spring-boot-starter-test')
+    testImplementation("org.camunda.bpm:camunda-bpm-assert:${camundaVersion}")
+    testImplementation("org.camunda.bpm:camunda-bpm-junit5:${camundaVersion}")
+    testImplementation("org.camunda.bpm:camunda-engine:${camundaVersion}")
+    testImplementation 'org.camunda.community.process_test_coverage:camunda-process-test-coverage-junit5-platform-7:2.7.0'
+    testImplementation 'com.h2database:h2:1.4.200'
     testRuntimeOnly('org.junit.platform:junit-platform-launcher')
 }
 
