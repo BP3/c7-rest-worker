@@ -11,6 +11,7 @@ import org.camunda.bpm.client.task.ExternalTaskHandler;
 import org.camunda.bpm.client.task.ExternalTaskService;
 import org.camunda.bpm.engine.variable.VariableMap;
 import org.camunda.bpm.engine.variable.Variables;
+import org.camunda.bpm.engine.variable.value.ObjectValue;
 import org.camunda.connect.httpclient.HttpConnector;
 import org.camunda.connect.httpclient.HttpRequest;
 import org.camunda.connect.httpclient.HttpResponse;
@@ -91,7 +92,8 @@ public final class C7RestConnector implements ExternalTaskHandler {
             VariableMap variables = Variables.createVariables();
             String outputVariableName = externalTask.getVariable(PARAM_OUTPUT_VARIABLE);
             if (outputVariableName != null) {
-                variables.putValue(outputVariableName, response.getResponse());
+                ObjectValue responseObj = Variables.objectValue(response.getResponse()).create();
+                variables.putValue(outputVariableName, responseObj);
             }
 
             log.debug("STATUS_CODE: {}", response.getStatusCode());
