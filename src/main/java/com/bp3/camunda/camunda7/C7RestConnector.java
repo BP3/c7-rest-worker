@@ -82,7 +82,16 @@ public final class C7RestConnector implements ExternalTaskHandler {
                     .method(httpMethod);
             setHeaders(request, asMap(externalTask.getVariable(PARAM_HTTP_HEADERS)));
             setQueryParams(request, asMap(externalTask.getVariable(PARAM_HTTP_PARAMETERS)));
-            setPayload(request, httpMethod, externalTask.getVariable(PARAM_HTTP_PAYLOAD));
+
+            String httpPayload = null;
+            if (externalTask.getAllVariablesTyped().containsKey(PARAM_HTTP_PAYLOAD)) {
+                Object value = externalTask.getVariableTyped(PARAM_HTTP_PAYLOAD).getValue();
+                if (value != null) {
+                    httpPayload = value.toString();
+                }
+            }
+
+            setPayload(request, httpMethod, httpPayload);
 
             // call the REST service
             HttpResponse response = request.execute();
