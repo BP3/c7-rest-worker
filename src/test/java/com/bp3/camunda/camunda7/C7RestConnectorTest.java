@@ -3,6 +3,7 @@ package com.bp3.camunda.camunda7;
 import org.camunda.bpm.client.task.ExternalTask;
 import org.camunda.bpm.client.task.ExternalTaskService;
 import org.camunda.bpm.engine.variable.VariableMap;
+import org.camunda.bpm.engine.variable.Variables;
 import org.camunda.connect.ConnectorException;
 import org.camunda.connect.httpclient.HttpConnector;
 import org.camunda.connect.httpclient.HttpRequest;
@@ -65,6 +66,8 @@ class C7RestConnectorTest {
                 .thenReturn("http://example.com");
         when(externalTask.getRetries())
                 .thenReturn(null);
+        when(externalTask.getAllVariablesTyped())
+                .thenReturn(Variables.createVariables());
 
         connector = new C7RestConnector(httpConnector);
     }
@@ -173,8 +176,10 @@ class C7RestConnectorTest {
         String payload = "TEST PAYLOAD";
         when(externalTask.getVariable(PARAM_HTTP_METHOD))
                 .thenReturn("POST");
-        when(externalTask.getVariable(PARAM_HTTP_PAYLOAD))
-                .thenReturn(payload);
+        when(externalTask.getAllVariablesTyped())
+                .thenReturn(Variables.putValue(PARAM_HTTP_PAYLOAD, payload));
+        when(externalTask.getVariableTyped(PARAM_HTTP_PAYLOAD))
+                .thenReturn(Variables.stringValue(payload));
 
         connector.execute(externalTask, externalTaskService);
 
