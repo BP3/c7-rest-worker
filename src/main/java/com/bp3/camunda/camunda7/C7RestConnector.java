@@ -95,7 +95,10 @@ public final class C7RestConnector implements ExternalTaskHandler {
             setPayload(request, httpMethod, httpPayload);
 
             // call the REST service
+            final long startTime = System.currentTimeMillis();
             HttpResponse response = request.execute();
+
+            log.debug("SERVICE EXECUTION RESPONSE DURATION: {} msec(s)", System.currentTimeMillis() - startTime);
 
             // set the output variable
             log.debug("RESPONSE: {}", response.getResponse());
