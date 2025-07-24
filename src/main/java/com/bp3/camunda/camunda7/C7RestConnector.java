@@ -98,7 +98,7 @@ public final class C7RestConnector implements ExternalTaskHandler {
             final long startTime = System.currentTimeMillis();
             HttpResponse response = request.execute();
 
-            log.debug("REQUEST EXECUTION TIME: {} msec(s)", System.currentTimeMillis() - startTime);
+            log.debug("SERVICE EXECUTION RESPONSE DURATION: {} msec(s)", System.currentTimeMillis() - startTime);
 
             // set the output variable
             log.debug("RESPONSE: {}", response.getResponse());
