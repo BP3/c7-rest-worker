@@ -66,6 +66,7 @@ public final class C7RestConnector implements ExternalTaskHandler {
         log.debug("EXECUTE EXTERNAL TASK: {} / {}", externalTask.getActivityId(), externalTask.getExecutionId());
         log.debug("ALL VARIABLES: {}", externalTask.getAllVariables());
         log.debug("TASK LOCK EXPIRATION TIME: {}", externalTask.getLockExpirationTime());
+        log.debug("TASK PRIORITY: {}", externalTask.getPriority());
 
         String httpMethod = externalTask.getVariable(PARAM_HTTP_METHOD);
         if (httpMethod == null || httpMethod.isBlank()) {
